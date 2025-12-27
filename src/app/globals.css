@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: "fact-regular";
+    src: url('./fonts/Fact_Regular.otf') ;
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "fact-bold";
+    src: url('./fonts/Fact_Bold.otf') ;
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "fact-medium";
+    src: url('./fonts/Fact_Medium.otf') ;
+    font-weight: 500;
+    font-style: normal;
+}
+
+body{
+    font-family: 'fact-regular', sans-serif;
+}
+
