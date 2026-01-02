@@ -7,7 +7,7 @@ import Wrapper from "@/app/components/wrapper";
 import Loading from "@/app/components/loading";
 import { formatDateWithOrdinal } from "@/app/libs/functions";
 import { notFound } from "next/navigation";
-import { address } from "framer-motion/client";
+import { ApiOutlet, ApiStage} from "@/app/libs/types";
 
 // ----------------------
 // 1. Fetch function
@@ -38,26 +38,27 @@ async function getOnboardedOutlets() {
 // ----------------------
 function OnboardedOutletsWrapper() {
   const responseOnboardedOutlets = use(getOnboardedOutlets());
+  
 
   if (!responseOnboardedOutlets) notFound();
 console.log("Onboarded Outlets Response:", responseOnboardedOutlets);
-  const mappedOutlets = responseOnboardedOutlets?.map((el: any) => ({
+  const mappedOutlets = responseOnboardedOutlets?.map((el: ApiOutlet) => ({
     id: el?.outletId,
     name: el?.outletName,
     expectedDate: el?.expectedDate ? formatDateWithOrdinal(el.expectedDate) : "",
     actualDate: el?.actualDate ? formatDateWithOrdinal(el.actualDate) : "",
     address : el?.address ?? "",
     completedStages: el?.stages
-      ?.filter((s: any) => s.isCompleted)
-      ?.map((stage: any) => ({
+      ?.filter((s: ApiStage) => s.isCompleted)
+      ?.map((stage: ApiStage) => ({
         id: stage.stageId,
         name: stage.stageName,
         completionPercentage: stage.completionPercentage ?? 0,
       })),
 
     pendingStages: el?.stages
-      ?.filter((s: any) => !s.isCompleted)
-      ?.map((stage: any) => ({
+      ?.filter((s: ApiStage) => !s.isCompleted)
+      ?.map((stage: ApiStage) => ({
         id: stage.stageId,
         name: stage.stageName,
         completionPercentage: stage.completionPercentage ?? "",

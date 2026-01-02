@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-// import useAuthStore from "../libs/store/auth";
+import useAuthStore from "../libs/store/auth";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -12,7 +12,7 @@ import TopLineCard from "./top-line-card";
 
 const Sidebar = () => {
   const [expanded, setExpanded] = useState(true);
-  // const { updateUserAuth } = useAuthStore();
+  const { updateUserAuth } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -22,16 +22,16 @@ const Sidebar = () => {
     return pathname === link || pathname.startsWith(link + "/");
   };
 
-  // const handleLogout = () => {
-  //   updateUserAuth({
-  //     accessToken: "",
-  //     refreshToken: "",
-  //     name: "",
-  //     empId: "",
-  //     userId: "",
-  //   });
-  //   router.push("/login");
-  // };
+  const handleLogout = () => {
+    updateUserAuth({
+      accessToken: "",
+      refreshToken: "",
+      name: "",
+      empId: "",
+      userId: "",
+    });
+    router.push("/login");
+  };
 
   return (
     <TopLineCard
@@ -75,7 +75,7 @@ const Sidebar = () => {
           if (item.label === "Logout") {
             return (
               <div key={item.label} className="w-full">
-                <button className={`${rowBase} ${rowLayout}`}>
+                <button onClick={handleLogout} className={`${rowBase} ${rowLayout}`}>
                   {expanded && <h1 className={labelClass}>{item.label}</h1>}
                 
                   {item.icon && <item.icon className={iconClass} />}

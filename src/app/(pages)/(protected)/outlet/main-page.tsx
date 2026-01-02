@@ -19,7 +19,7 @@ const Page: React.FC<TypeOfPageProps> = ({ onboardedOutlets }) => {
  
 
   const handleViewOutlet = (id: number) => {
-    router.push(`/outlet/view/${id}`);
+    router.push(`/outlet/${id}`);
   };
 
   const query = searchQuery.toLowerCase().trim();
