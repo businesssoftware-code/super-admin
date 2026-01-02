@@ -2,6 +2,10 @@
 import { NsoOutletDetail } from "@/app/libs/types";
 import { useState } from "react";
 import ApprovalModal from "../components/approval-modal";
+import DocumentViewerModal from "../components/document-viewer-modal";
+import { Eye } from "lucide-react";
+import { motion } from "framer-motion";
+
 
 interface OutletDetailPageProps {
   data?: NsoOutletDetail;
@@ -14,6 +18,8 @@ const OutletDetailPage = ({ data }: OutletDetailPageProps) => {
   const stages = data?.stages ?? [];
   const [action, setAction] = useState<'approve'|'reject'|null>(null);
   const [remarks, setRemarks] = useState("");
+  const [openDoc, setOpenDoc] = useState(false);
+
   const closeModal = () => {
     setAction(null);
     setRemarks("");
@@ -28,6 +34,9 @@ const OutletDetailPage = ({ data }: OutletDetailPageProps) => {
 
     closeModal();
   };
+
+  const loi = data?.stages.find(stage=>stage?.stageName==="Documentation")?.tasks.find(task=>task?.title==="Upload LOI");
+  console.log("LOI Stage:",loi);
 
   return (
     <div className="p-paddingX space-y-6">
@@ -44,20 +53,69 @@ const OutletDetailPage = ({ data }: OutletDetailPageProps) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-4">
-          <button
-            className="px-6 py-2 rounded-secondaryRadius bg-success text-primary text-btnAction shadow-custom"
-            onClick={() => setAction("approve")}
-          >
-            Approve
-          </button>
-          <button
-            className="px-6 py-2 rounded-secondaryRadius bg-error text-whiteBg text-btnAction shadow-custom"
-            onClick={() => setAction("reject")}
-          >
-            Reject
-          </button>
-        </div>
+        <div className="flex items-center gap-4">
+  {/* View LOI — secondary but premium */}
+  <motion.button
+    onClick={() => setOpenDoc(true)}
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.96 }}
+    className="
+      group relative flex items-center gap-2
+      px-5 py-2.5
+      rounded-full
+      bg-white/70 backdrop-blur-md
+      border border-info/30
+      text-info font-medium text-sm
+      shadow-[0_6px_20px_rgba(32,72,119,0.22)]
+      transition
+    "
+  >
+    <span
+      className="
+        absolute inset-0 rounded-full
+        bg-info/20 blur-lg opacity-0
+        group-hover:opacity-100 transition
+      "
+    />
+    <Eye size={18} className="relative" />
+    <span className="relative">View LOI</span>
+  </motion.button>
+
+  {/* Approve — primary action */}
+  <motion.button
+    whileHover={{ scale: 1.04 }}
+    whileTap={{ scale: 0.97 }}
+    className="
+      px-6 py-2.5
+      rounded-full
+      bg-success
+      text-primary text-sm font-semibold
+      shadow-[0_8px_24px_rgba(0,0,0,0.25)]
+      transition
+    "
+    onClick={() => setAction("approve")}
+  >
+    Approve
+  </motion.button>
+
+  {/* Reject — destructive but controlled */}
+  <motion.button
+    whileHover={{ scale: 1.04 }}
+    whileTap={{ scale: 0.97 }}
+    className="
+      px-6 py-2.5
+      rounded-full
+      bg-error
+      text-whiteBg text-sm font-semibold
+      shadow-[0_8px_24px_rgba(114,20,38,0.35)]
+      transition
+    "
+    onClick={() => setAction("reject")}
+  >
+    Reject
+  </motion.button>
+</div>
+
       </div>
 
       {/* Project Info */}
@@ -147,6 +205,12 @@ const OutletDetailPage = ({ data }: OutletDetailPageProps) => {
         onClose={closeModal}
         onSubmit={handleSubmit}
       />
+      <DocumentViewerModal
+  open={openDoc}
+  title="Letter of Intent (LOI)"
+  documentUrl={loi?.document?.fileUrl??""}
+  onClose={() => setOpenDoc(false)}
+/>
     </div>
   );
 };
