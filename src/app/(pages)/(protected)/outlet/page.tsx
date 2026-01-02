@@ -45,6 +45,7 @@ console.log("Onboarded Outlets Response:", responseOnboardedOutlets);
   const mappedOutlets = responseOnboardedOutlets?.map((el: ApiOutlet) => ({
     id: el?.outletId,
     name: el?.outletName,
+    isDraft: el?.isDraft,
     expectedDate: el?.expectedDate ? formatDateWithOrdinal(el.expectedDate) : "",
     actualDate: el?.actualDate ? formatDateWithOrdinal(el.actualDate) : "",
     address : el?.address ?? "",

@@ -1,14 +1,12 @@
 "use client";
 
 import { TypeOfStagesInOnboardedOutletsResponse } from "@/app/libs/types";
-import { a } from "framer-motion/client";
 import { ArrowRight } from "lucide-react";
-
-
 
 interface OutletCardProps {
   id: number;
   name: string;
+  isDraft: boolean;
   expectedDate: string;
   address: string;
   actualDate?: string | null;
@@ -20,6 +18,7 @@ interface OutletCardProps {
 const OutletCard: React.FC<OutletCardProps> = ({
   id,
   name,
+  isDraft,
   expectedDate,
   actualDate,
   address,
@@ -27,31 +26,53 @@ const OutletCard: React.FC<OutletCardProps> = ({
   pendingStages,
   onClick,
 }) => {
+  const isApproved = true;
+
   return (
     <div
       onClick={() => onClick(id)}
-      className="
-        cursor-pointer rounded-xl border border-gray-200 bg-white
-        p-5 shadow-sm hover:shadow-md transition
-        flex flex-col gap-4
-      "
+      className={`
+        cursor-pointer rounded-xl border p-5
+        flex flex-col gap-4 transition
+        ${
+          isApproved
+            ? "border-success bg-white shadow-sm hover:shadow-md"
+            : "border-warning bg-warning/10 shadow-sm hover:shadow-md"
+        }
+      `}
     >
       {/* Header */}
       <div className="flex justify-between items-start">
         <div className="flex flex-col gap-3">
-          <h3 className="text-lg font-semibold text-primary">
-            {name}
-          </h3>
-          <p className="text-caption font-extrabold text-neutralText"><span className="text-black">Address:</span> {address}</p>
+          <h3 className="text-lg font-semibold text-primary">{name}</h3>
+
+          <p className="text-caption font-extrabold text-neutralText">
+            <span className="text-black">Address:</span> {address}
+          </p>
+
           <p className="text-caption text-gray-500">
             Expected: {expectedDate}
           </p>
+
           <p className="text-caption text-gray-500">
             Actual: {actualDate ?? "N/A"}
           </p>
         </div>
 
-        <ArrowRight className="text-gray-400" />
+        {/* Status + Arrow */}
+        <div className="flex flex-col items-end gap-2">
+          <span
+            className={`px-3 py-1 text-xs font-semibold rounded-full text-nowrap ${
+              isApproved
+                ? "bg-success text-primary"
+                : "bg-warning text-neutralText"
+            }`}
+          >
+            {isApproved ? "Approved" : "Pending Approval"}
+          </span>
+
+          <ArrowRight className="text-gray-400" />
+        </div>
       </div>
 
       {/* Completed */}

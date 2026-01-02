@@ -79,6 +79,7 @@ const Page: React.FC<TypeOfPageProps> = ({ onboardedOutlets }) => {
             <OutletCard
               key={outlet.id}
               id={outlet.id}
+              isDraft={outlet.isDraft}
               name={outlet.name}
               address={outlet.address}
               expectedDate={outlet.expectedDate}

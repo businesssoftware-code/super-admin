@@ -19,6 +19,7 @@ export type TypeOfOnboardedOutletsResponse = {
   id: number;
   name: string;
   address: string;
+  isDraft: boolean;
   expectedDate: string;
   actualDate: string;
   completedStages: TypeOfStagesInOnboardedOutletsResponse[];
@@ -45,7 +46,7 @@ export interface ApiOutlet {
   city: string;
   expectedDate: string;
   actualDate: string | null;
-
+  isDraft: boolean;
   completedStagesCount: number;
   pendingStagesCount: number;
   completionPercentage: number;
