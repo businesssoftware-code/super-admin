@@ -1,42 +1,82 @@
-"use client"
-import { NsoOutletDetail } from "@/app/libs/types";
+"use client";
+
+import { NsoOutletDetail, NsoTask } from "@/app/libs/types";
 import { useState } from "react";
 import ApprovalModal from "../components/approval-modal";
 import DocumentViewerModal from "../components/document-viewer-modal";
 import { Eye } from "lucide-react";
 import { motion } from "framer-motion";
-
+import { formatDateWithOrdinal } from "@/app/libs/functions";
+import { getErrorMessage, privateApi } from "@/app/libs/axios";
+import { toast } from "sonner";
 
 interface OutletDetailPageProps {
   data?: NsoOutletDetail;
 }
 
 const OutletDetailPage = ({ data }: OutletDetailPageProps) => {
-  console.log("OutletDetailPage data:", data);
   const outlet = data?.outlet;
   const project = data?.project;
   const stages = data?.stages ?? [];
-  const [action, setAction] = useState<'approve'|'reject'|null>(null);
-  const [remarks, setRemarks] = useState("");
-  const [openDoc, setOpenDoc] = useState(false);
 
-  const closeModal = () => {
+  const [action, setAction] = useState<"approve" | "reject" | null>(null);
+  const [remarks, setRemarks] = useState("");
+
+  // 🔹 unified document preview state
+  const [docPreview, setDocPreview] = useState<{
+    open: boolean;
+    title?: string;
+    url?: string;
+  }>({
+    open: false,
+  });
+
+  const closeApprovalModal = () => {
     setAction(null);
     setRemarks("");
   };
 
-  const handleSubmit = () => {
-    console.log({
-      action,
-      remarks,
-      outletId: outlet?.id,
-    });
+  const handleSubmit = async() => {
+  const toastId = toast.loading(
+      action === "approve"
+        ? "Approving outlet..."
+        : "Rejecting outlet..."
+    );
+   const payload =
+    action === "approve"
+      ? {}
+      : { rejectionReason: remarks };
+    try{
+        await privateApi.patch(`/outlets/${outlet?.id}/${action==="approve" ? "approval" : "reject"}`, payload
+        );
+      toast.success(
+        action === "approve"
+          ? "Outlet approved successfully."
+          : "Outlet rejected successfully.",
+        { id: toastId }
+      );
+    }catch(err){
+      toast.error(getErrorMessage(err) || "An error occurred.", { id: toastId });
+      console.error("Approval action failed:", err);
+    }finally{
+      closeApprovalModal();
+    }
 
-    closeModal();
   };
 
-  const loi = data?.stages.find(stage=>stage?.stageName==="Documentation")?.tasks.find(task=>task?.title==="Upload LOI");
-  console.log("LOI Stage:",loi);
+  // LOI task (header button)
+  const loiTask = data?.stages
+    ?.find((s) => s.stageName === "Documentation")
+    ?.tasks?.find((t) => t.title === "Upload LOI");
+
+  const openDocument = (title: string, url?: string) => {
+    if (!url) return;
+    setDocPreview({
+      open: true,
+      title,
+      url,
+    });
+  };
 
   return (
     <div className="p-paddingX space-y-6">
@@ -54,68 +94,49 @@ const OutletDetailPage = ({ data }: OutletDetailPageProps) => {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-4">
-  {/* View LOI — secondary but premium */}
-  <motion.button
-    onClick={() => setOpenDoc(true)}
-    whileHover={{ scale: 1.05 }}
-    whileTap={{ scale: 0.96 }}
-    className="
-      group relative flex items-center gap-2
-      px-5 py-2.5
-      rounded-full
-      bg-white/70 backdrop-blur-md
-      border border-info/30
-      text-info font-medium text-sm
-      shadow-[0_6px_20px_rgba(32,72,119,0.22)]
-      transition
-    "
-  >
-    <span
-      className="
-        absolute inset-0 rounded-full
-        bg-info/20 blur-lg opacity-0
-        group-hover:opacity-100 transition
-      "
-    />
-    <Eye size={18} className="relative" />
-    <span className="relative">View LOI</span>
-  </motion.button>
+          {/* View LOI */}
+          <motion.button
+            disabled={!loiTask?.document?.fileUrl}
+            onClick={() =>
+              openDocument(
+                "Letter of Intent (LOI)",
+                loiTask?.document?.fileUrl
+              )
+            }
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.96 }}
+            className="group relative flex items-center gap-2 px-5 py-2.5 rounded-full
+              bg-white/70 backdrop-blur-md border border-info/30
+              text-info font-medium text-sm
+              shadow-[0_6px_20px_rgba(32,72,119,0.22)]
+              disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <Eye size={18} />
+            <span>View LOI</span>
+          </motion.button>
 
-  {/* Approve — primary action */}
-  <motion.button
-    whileHover={{ scale: 1.04 }}
-    whileTap={{ scale: 0.97 }}
-    className="
-      px-6 py-2.5
-      rounded-full
-      bg-success
-      text-primary text-sm font-semibold
-      shadow-[0_8px_24px_rgba(0,0,0,0.25)]
-      transition
-    "
-    onClick={() => setAction("approve")}
-  >
-    Approve
-  </motion.button>
+          {/* Approve */}
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+            className="px-6 py-2.5 rounded-full bg-success text-primary
+              text-sm font-semibold shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
+            onClick={() => setAction("approve")}
+          >
+            Approve
+          </motion.button>
 
-  {/* Reject — destructive but controlled */}
-  <motion.button
-    whileHover={{ scale: 1.04 }}
-    whileTap={{ scale: 0.97 }}
-    className="
-      px-6 py-2.5
-      rounded-full
-      bg-error
-      text-whiteBg text-sm font-semibold
-      shadow-[0_8px_24px_rgba(114,20,38,0.35)]
-      transition
-    "
-    onClick={() => setAction("reject")}
-  >
-    Reject
-  </motion.button>
-</div>
-
+          {/* Reject */}
+          <motion.button
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+            className="px-6 py-2.5 rounded-full bg-error text-whiteBg
+              text-sm font-semibold shadow-[0_8px_24px_rgba(114,20,38,0.35)]"
+            onClick={() => setAction("reject")}
+          >
+            Reject
+          </motion.button>
+        </div>
       </div>
 
       {/* Project Info */}
@@ -123,7 +144,7 @@ const OutletDetailPage = ({ data }: OutletDetailPageProps) => {
         <InfoBlock label="Project Status" value={project?.status ?? "—"} />
         <InfoBlock
           label="Expected Opening"
-          value={project?.expectedOpeningDate ?? "—"}
+          value={project?.expectedOpeningDate ? formatDateWithOrdinal(project.expectedOpeningDate) : "—"}
         />
       </div>
 
@@ -147,16 +168,16 @@ const OutletDetailPage = ({ data }: OutletDetailPageProps) => {
       <div className="space-y-4">
         {stages.map((stage) => (
           <div
-            key={stage?.stageId}
+            key={stage.stageId}
             className="bg-whiteBg rounded-secondaryRadius p-5 shadow-custom"
           >
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-bodyLarge font-medium text-primary">
-                {stage?.stageName ?? "—"}
+                {stage.stageName}
               </h3>
               <span className="text-caption text-neutralText">
-                {stage?.completedTasks ?? 0}/{stage?.totalTasks ?? 0} tasks ·{" "}
-                {stage?.completionPercentage ?? 0}%
+                {stage.completedTasks}/{stage.totalTasks} ·{" "}
+                {stage.completionPercentage}%
               </span>
             </div>
 
@@ -164,53 +185,76 @@ const OutletDetailPage = ({ data }: OutletDetailPageProps) => {
             <div className="w-full h-2 bg-neutralBg rounded-full overflow-hidden">
               <div
                 className="h-full bg-info transition-all"
-                style={{
-                  width: `${stage?.completionPercentage ?? 0}%`,
-                }}
+                style={{ width: `${stage.completionPercentage}%` }}
               />
             </div>
 
             {/* Tasks */}
             <div className="mt-4 space-y-2">
-              {stage?.tasks?.map((task) => (
-                <div
-                  key={task?.id}
-                  className="flex justify-between items-center text-bodySmall"
-                >
-                  <span className="text-neutralText">
-                    {task?.title ?? "—"}
-                  </span>
-                  <span
-                    className={`px-2 py-1 rounded text-caption ${
-                      task?.status === "completed"
-                        ? "bg-success text-primary"
-                        : task?.status === "pending"
-                        ? "bg-warning text-primary"
-                        : "bg-neutralBg text-neutralText"
-                    }`}
+              {stage.tasks.map((task: NsoTask) => {
+                const canPreview =
+                  task.status === "completed" &&
+                  !!task.document?.fileUrl;
+
+                return (
+                  <div
+                    key={task.id}
+                    className="flex justify-between items-center text-bodySmall"
                   >
-                    {task?.status ?? "unknown"}
-                  </span>
-                </div>
-              )) ?? null}
+                    <span className="text-neutralText">
+                      {task.title}
+                    </span>
+
+                    <div className="flex items-center gap-3">
+                      {canPreview && (
+                        <button
+                          onClick={() =>
+                            openDocument(task.title, task.document.fileUrl)
+                          }
+                          className="text-info hover:scale-110 transition"
+                          title="View document"
+                        >
+                          <Eye size={16} />
+                        </button>
+                      )}
+
+                      <span
+                        className={`px-2 py-1 rounded text-caption ${
+                          task.status === "completed"
+                            ? "bg-success text-primary"
+                            : task.status === "pending"
+                            ? "bg-warning text-primary"
+                            : "bg-neutralBg text-neutralText"
+                        }`}
+                      >
+                        {task.status}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         ))}
       </div>
-        <ApprovalModal
+
+      {/* Approval Modal */}
+      <ApprovalModal
         open={!!action}
         action={action as "approve" | "reject"}
         remarks={remarks}
         onChange={setRemarks}
-        onClose={closeModal}
+        onClose={closeApprovalModal}
         onSubmit={handleSubmit}
       />
+
+      {/* Document Preview Modal */}
       <DocumentViewerModal
-  open={openDoc}
-  title="Letter of Intent (LOI)"
-  documentUrl={loi?.document?.fileUrl??""}
-  onClose={() => setOpenDoc(false)}
-/>
+        open={docPreview.open}
+        title={docPreview.title ?? "Document"}
+        documentUrl={docPreview.url ?? ""}
+        onClose={() => setDocPreview({ open: false })}
+      />
     </div>
   );
 };

@@ -26,7 +26,7 @@ const OutletCard: React.FC<OutletCardProps> = ({
   pendingStages,
   onClick,
 }) => {
-  const isApproved = true;
+  const isApproved = isDraft ? true : false;
 
   return (
     <div
