@@ -1,14 +1,20 @@
-import Wrapper from "./components/wrapper";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import useAuthStore from "./libs/store/auth";
 
 export default function Home() {
-  return (
-    <Wrapper>
-      <div className="flex flex-col gap-6 ">
-        <h1 className="text-3xl font-bold text-neutralText">Welcome to Basil Super Admin</h1>
-        <div className="relative w-full h-[400px]">
-       
-        </div>
-      </div>
-    </Wrapper>
-  );
+  const router = useRouter();
+  const { userAuthData } = useAuthStore();
+
+  useEffect(() => {
+    if (userAuthData?.accessToken) {
+      router.push("/home");
+    } else {
+      router.push("/login");
+    }
+  }, [userAuthData, router]);
+
+  return null; // nothing to render
 }
