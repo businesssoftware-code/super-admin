@@ -6,7 +6,7 @@ import { ArrowRight } from "lucide-react";
 interface OutletCardProps {
   id: number;
   name: string;
-  isDraft: boolean;
+  outletStatus: "draft" | "approved" | "rejected";
   expectedDate: string;
   address: string;
   actualDate?: string | null;
@@ -15,10 +15,28 @@ interface OutletCardProps {
   onClick: (id: number) => void;
 }
 
+const statusConfig = {
+  draft: {
+    label: "Pending Approval",
+    card: "border-warning bg-warning/10",
+    badge: "bg-warning text-neutralText",
+  },
+  approved: {
+    label: "Approved",
+    card: "border-success bg-white",
+    badge: "bg-success text-primary",
+  },
+  rejected: {
+    label: "Rejected",
+    card: "border-danger bg-danger/10",
+    badge: "bg-error text-white",
+  },
+} as const;
+
 const OutletCard: React.FC<OutletCardProps> = ({
   id,
   name,
-  isDraft,
+  outletStatus,
   expectedDate,
   actualDate,
   address,
@@ -26,19 +44,16 @@ const OutletCard: React.FC<OutletCardProps> = ({
   pendingStages,
   onClick,
 }) => {
-  const isApproved = isDraft ? true : false;
+  const status = statusConfig[outletStatus];
 
+console.log(status)
   return (
     <div
       onClick={() => onClick(id)}
       className={`
         cursor-pointer rounded-xl border p-5
-        flex flex-col gap-4 transition
-        ${
-          isApproved
-            ? "border-success bg-white shadow-sm hover:shadow-md"
-            : "border-warning bg-warning/10 shadow-sm hover:shadow-md"
-        }
+        flex flex-col gap-4 transition shadow-sm hover:shadow-md
+        ${status.card}
       `}
     >
       {/* Header */}
@@ -62,13 +77,9 @@ const OutletCard: React.FC<OutletCardProps> = ({
         {/* Status + Arrow */}
         <div className="flex flex-col items-end gap-2">
           <span
-            className={`px-3 py-1 text-xs font-semibold rounded-full text-nowrap ${
-              isApproved
-                ? "bg-success text-primary"
-                : "bg-warning text-neutralText"
-            }`}
+            className={`px-3 py-1  text-xs font-semibold rounded-full text-nowrap ${status.badge}`}
           >
-            {isApproved ? "Approved" : "Pending Approval"}
+            {status.label}
           </span>
 
           <ArrowRight className="text-gray-400" />

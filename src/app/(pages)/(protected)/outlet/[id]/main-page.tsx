@@ -9,12 +9,13 @@ import { motion } from "framer-motion";
 import { formatDateWithOrdinal } from "@/app/libs/functions";
 import { getErrorMessage, privateApi } from "@/app/libs/axios";
 import { toast } from "sonner";
-
+import { useRouter } from "next/navigation";
 interface OutletDetailPageProps {
   data?: NsoOutletDetail;
 }
 
 const OutletDetailPage = ({ data }: OutletDetailPageProps) => {
+  const router = useRouter();
   const outlet = data?.outlet;
   const project = data?.project;
   const stages = data?.stages ?? [];
@@ -55,6 +56,8 @@ const OutletDetailPage = ({ data }: OutletDetailPageProps) => {
           : "Outlet rejected successfully.",
         { id: toastId }
       );
+          router.refresh(); // ✅ THIS IS THE KEY LINE
+
     }catch(err){
       toast.error(getErrorMessage(err) || "An error occurred.", { id: toastId });
       console.error("Approval action failed:", err);
@@ -78,6 +81,7 @@ const OutletDetailPage = ({ data }: OutletDetailPageProps) => {
     });
   };
 
+  console.log(data?.outlet?.outletStatus)
   return (
     <div className="p-paddingX space-y-6">
       {/* Header */}
@@ -93,7 +97,7 @@ const OutletDetailPage = ({ data }: OutletDetailPageProps) => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-4">
+       {data?.outlet?.outletStatus==="draft" ? <div className="flex items-center gap-4">
           {/* View LOI */}
           <motion.button
             disabled={!loiTask?.document?.fileUrl}
@@ -136,7 +140,26 @@ const OutletDetailPage = ({ data }: OutletDetailPageProps) => {
           >
             Reject
           </motion.button>
-        </div>
+        </div>:<div>
+  <span
+    className={`
+      inline-flex items-center
+      px-4 py-1.5
+      rounded-full
+      text-xs font-semibold
+      tracking-wide
+      ${
+        data?.outlet?.outletStatus === "approved"
+          ? "bg-success text-primary border border-success/30"
+          : "bg-error/15 text-error border border-error/30"
+      }
+    `}
+  >
+    {data?.outlet?.outletStatus === "approved" ? "Approved" : "Rejected"}
+  </span>
+</div>
+}
+
       </div>
 
       {/* Project Info */}

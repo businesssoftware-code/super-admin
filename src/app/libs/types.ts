@@ -19,7 +19,7 @@ export type TypeOfOnboardedOutletsResponse = {
   id: number;
   name: string;
   address: string;
-  isDraft: boolean;
+  outletStatus: "draft" | "approved" | "rejected";
   expectedDate: string;
   actualDate: string;
   completedStages: TypeOfStagesInOnboardedOutletsResponse[];
@@ -46,7 +46,7 @@ export interface ApiOutlet {
   city: string;
   expectedDate: string;
   actualDate: string | null;
-  isDraft: boolean;
+  outletStatus: string;
   completedStagesCount: number;
   pendingStagesCount: number;
   completionPercentage: number;
@@ -93,6 +93,8 @@ export type NsoOutletDetail={
     id:number;
     name:string;
     warehouseName:string;
+    outletStatus:"draft" | "approved" | "rejected";
+
   };
   stages:NsoStages[];
   project: NsoProject
