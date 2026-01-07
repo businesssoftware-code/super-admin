@@ -84,7 +84,7 @@ const ApprovalModal = ({
               </h2>
               <p className="text-bodySmall text-neutralText mt-1">
                 {isApprove
-                  ? "Confirm approval with an optional note"
+                  ? "Confirm approval of this outlet"
                   : "Please provide a reason for rejection"}
               </p>
 
@@ -98,7 +98,7 @@ const ApprovalModal = ({
             </div>
 
             {/* Textarea */}
-            <div className="relative">
+            {!isApprove &&<div className="relative">
               <textarea
                 value={remarks}
                 onChange={(e) => onChange(e.target.value)}
@@ -117,7 +117,7 @@ const ApprovalModal = ({
               <span className="absolute bottom-3 right-4 text-caption text-neutralText">
                 {remarks.length}/250
               </span>
-            </div>
+            </div>}
 
             {/* Actions */}
             <div className="mt-6 flex items-center justify-end gap-3">
@@ -137,7 +137,7 @@ const ApprovalModal = ({
 
               <motion.button
                 whileTap={{ scale: 0.97 }}
-                disabled={!remarks.trim()}
+                disabled={!isApprove && !remarks.trim()}
                 onClick={onSubmit}
                 className={`
                   px-6 py-2.5

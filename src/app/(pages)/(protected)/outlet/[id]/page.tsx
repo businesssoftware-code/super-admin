@@ -57,6 +57,7 @@ export default async function Page({ params }: PageProps) {
   const accessToken = cookieStore.get("accessToken")?.value ?? "";
 
   const outlet = await fetchNsoOutletById(id, accessToken);
+  console.log("Fetched Outlet Data:", outlet);
 
   return (
     <Wrapper>
