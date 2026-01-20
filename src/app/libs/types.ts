@@ -100,3 +100,21 @@ export type NsoOutletDetail={
   project: NsoProject
 }
 
+export interface Asset {
+  id: string;
+  name: string;
+  url?: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  assets: Asset[];
+}
+
+export interface AddAssetFormData {
+  name: string;
+  url?: string;
+  categoryId?: string;
+  newCategoryName?: string;
+}
