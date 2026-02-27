@@ -39,7 +39,16 @@ export interface ApiStage {
   isCompleted: boolean;
 }
 
+
+export type TypeOfStageIndicators =  {
+    stageName: string;
+    status: string;
+    progress: number;
+}
+
+
 export interface ApiOutlet {
+  
   outletId: number;
   outletName: string;
   address: string;
@@ -47,12 +56,14 @@ export interface ApiOutlet {
   expectedDate: string;
   actualDate: string | null;
   outletStatus: string;
-  completedStagesCount: number;
-  pendingStagesCount: number;
-  completionPercentage: number;
-  nextPendingStage: string;
-
+  status: string;
+  rentAmount: number;
+  sdAmount: number;
   stages: ApiStage[];
+  daysPendingForLOIApproval: number;
+  stageIndicators: TypeOfStageIndicators[];
+  overallProgress: number;
+
 }
 
 export type NsoStages={
@@ -117,4 +128,25 @@ export interface AddAssetFormData {
   url?: string;
   categoryId?: string;
   newCategoryName?: string;
+}
+
+
+export type TypeOfStatsOfOutletDashboard = {
+    pendingApprovals: number;
+    urgent: number;
+    approvedToday: number;
+    rejectedToday: number;
+    liveOutlets: number;
+}
+
+export type TypeOfOutletDashboardTabs = {
+  pending: number;
+  approved: number;
+  rejected: number;
+}
+
+export type TypeOfOutletDashboard = {
+  stats: TypeOfStatsOfOutletDashboard;
+  tabs: TypeOfOutletDashboardTabs;
+  immediateApprovals: [];
 }
