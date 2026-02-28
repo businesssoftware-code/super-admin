@@ -57,18 +57,20 @@ export interface ApiOutlet {
   actualDate: string | null;
   outletStatus: string;
   status: string;
-  rentAmount: number;
+  fixedRentAmount: number;
   sdAmount: number;
   stages: ApiStage[];
   daysPendingForLOIApproval: number;
   stageIndicators: TypeOfStageIndicators[];
   overallProgress: number;
   approvedDate: string;
-  rejectedDate: string;
-  rejectedReason: string;
-  LOIDoc: string;
+  rejectionReason: string;
+  loiDocument: string;
   createdAt: string;
   areaManager: string;
+  revSharePercent: number;
+  rentModel: string;
+  
 
 }
 
