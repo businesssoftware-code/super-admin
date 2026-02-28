@@ -1,7 +1,7 @@
 "use client";
 
 import { getErrorMessage, privateApi } from "@/app/libs/axios";
-import { formatDateWithOrdinal } from "@/app/libs/functions";
+import { formatDateDifference, formatDateWithOrdinal, formatDateWithShort, getTodaysDate } from "@/app/libs/functions";
 import {
   ApiOutlet,
   TypeOfOutletDashboard,
@@ -120,50 +120,7 @@ const PHASES: string[] = [
   "Live",
 ];
 
-const initialRejected: RejectedOutlet[] = [
-  {
-    id: 201,
-    name: "Dharavi Traders",
-    area: "East Zone",
-    warehouse: "WH-002",
-    submittedBy: "Ramesh Gupta",
-    rejectedDate: "2026-02-16",
-    rejectedBy: "Super Admin",
-    rentAmount: 72000,
-    sdAmount: 216000,
-    loiStatus: "Uploaded",
-    reason:
-      "Rent amount exceeds approved budget ceiling for this zone. Resubmit with revised terms.",
-  },
-  {
-    id: 202,
-    name: "Hilltop Grocery",
-    area: "Central Zone",
-    warehouse: "WH-001",
-    submittedBy: "Pooja Verma",
-    rejectedDate: "2026-02-14",
-    rejectedBy: "Super Admin",
-    rentAmount: 29000,
-    sdAmount: 87000,
-    loiStatus: "Missing",
-    reason:
-      "LOI document was not submitted at time of review. Application cannot proceed without it.",
-  },
-  {
-    id: 203,
-    name: "Royal Provision Store",
-    area: "South Zone",
-    warehouse: "WH-003",
-    submittedBy: "Sanjay Iyer",
-    rejectedDate: "2026-02-11",
-    rejectedBy: "Super Admin",
-    rentAmount: 55000,
-    sdAmount: 165000,
-    loiStatus: "Uploaded",
-    reason:
-      "Location conflicts with existing nearby outlet (City Mart). Minimum distance policy not met.",
-  },
-];
+
 
 const initialNotifications: Notification[] = [
   {
@@ -391,15 +348,6 @@ export default function App({
     dashboardData,
   );
 
-  const [approvedList, setApprovedList] = useState<ApiOutlet[]>(
-    outlets?.filter((o) => o.outletStatus === "Approved"),
-  );
-  const [rejectedList, setRejectedList] =
-    useState<RejectedOutlet[]>(initialRejected);
-
-  const [notifications, setNotifications] =
-    useState<Notification[]>(initialNotifications);
-
   const handleFetch = async () => {
     const toastId = toast.loading("Fetching the outlets data...");
 
@@ -414,32 +362,29 @@ export default function App({
         responseOfDashboard?.status === 200
       ) {
         const mappedOutlets = responseOfOultets?.data?.map((el: ApiOutlet) => ({
+         
           outletId: el?.outletId,
-          outletName: el?.outletName,
-          outletStatus:
-            el?.outletStatus === "draft"
-              ? "Pending"
-              : el?.outletStatus === "approved"
-                ? "Approved"
-                : "Rejected",
-          expectedDate: el?.expectedDate
-            ? formatDateWithOrdinal(el.expectedDate)
-            : "",
-          actualDate: el?.actualDate
-            ? formatDateWithOrdinal(el.actualDate)
-            : "",
-          address: el?.address ?? "",
-          rentAmount: el?.rentAmount ?? 0,
-          sdAmount: el?.sdAmount ?? 0,
-          city: el?.city ?? "",
-          status: el?.status ?? "",
-          daysPendingForLOIApproval: el?.daysPendingForLOIApproval ?? 0,
-          approvedDate: el?.approvedDate ?? "",
-          rejectedDate: el?.rejectedDate ?? "",
-          LIODoc: el?.LOIDoc ?? "",
-          rejectedReason: el?.rejectedReason ?? "",
-          createdAt: el?.createdAt ?? "",
-          areaManager: el?.areaManager ?? "",
+              outletName: el?.outletName,
+              outletStatus: el?.outletStatus==="draft" ? "Pending": (el?.outletStatus==="approved" ? "Approved": "Rejected"),
+              expectedDate: el?.expectedDate
+                ? formatDateWithOrdinal(el.expectedDate)
+                : "",
+              actualDate: el?.actualDate ? formatDateWithOrdinal(el.actualDate) : "",
+              address: el?.address ?? "",
+              fixedRentAmount: el?.fixedRentAmount ?? 0,
+              sdAmount: el?.sdAmount ?? 0,
+              revSharePercent: el?.revSharePercent ?? 0,
+              rentModel: el?.rentModel ?? "",
+              city: el?.city ?? "",
+              status: el?.status ?? "",
+              daysPendingForLOIApproval: el?.outletStatus==="draft" ? formatDateDifference(getTodaysDate(), getTodaysDate(el?.createdAt)): 0,
+              stageIndicators: el?.stageIndicators ?? [],
+              overallProgress: el?.overallProgress ?? 0,
+              approvedDate: formatDateWithOrdinal(el?.approvedDate ?? "") ?? "",
+              loiDocument: el?.loiDocument ?? "",
+              rejectionReason: el?.rejectionReason ?? "",
+              createdAt: formatDateWithShort(el?.createdAt ?? "") ?? "",
+              areaManager: el?.areaManager ?? "",
 
         }));
 
@@ -587,10 +532,15 @@ export default function App({
 
   
   const handleViewLOI  = (LOIPdf: string) => {
-
+ 
     if(!LOIPdf) return;
     window.open(LOIPdf, "_blank", "noopener,noreferrer");
 
+  }
+
+
+  const handleRentModelName = (rentModel: string) => {
+    return rentModel==="fixedRent" ? "Fixed Rent" : (rentModel==="fixedRentWithRevShare" ? "Fixed Rent with Revenue Share" : (rentModel==="revShare" ? "Revenue Share" : ""));
   }
 
 
@@ -948,7 +898,7 @@ export default function App({
                               marginBottom: 12,
                             }}
                           >
-                            <div
+                            {(outlet?.rentModel==="fixedRent" || outlet?.rentModel==="fixedRentWithRevShare") && <div
                               style={{
                                 flex: 1,
                                 background: colors.secondarySurface,
@@ -975,9 +925,44 @@ export default function App({
                                   color: colors.primary,
                                 }}
                               >
-                                {fmt(outlet.rentAmount)}
+                                {fmt(outlet.fixedRentAmount)}
+                              </div> 
+                            </div>}
+
+
+                            {(outlet?.rentModel==="revShare" || outlet?.rentModel==="fixedRentWithRevShare") && <div
+                              style={{
+                                flex: 1,
+                                background: colors.secondarySurface,
+                                borderRadius: 10,
+                                padding: "7px 12px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: 9,
+                                  color: colors.neutralText,
+                                  fontWeight: 700,
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.4px",
+                                  marginBottom: 2,
+                                }}
+                              >
+                                Revenue Share
                               </div>
-                            </div>
+                              <div
+                                style={{
+                                  fontSize: 13,
+                                  fontWeight: 800,
+                                  color: colors.primary,
+                                }}
+                              >
+                                {outlet?.revSharePercent+"%"}
+                              </div> 
+                            </div>}
+
+
+
                             <div
                               style={{
                                 flex: 1,
@@ -1139,7 +1124,10 @@ export default function App({
                         "Outlet Name",
                         "Location",
                         "Area Manager",
+                        "Rent Model",
                         "Rent / Month",
+                        "Revenue Share",
+                        "Rent + Revenue Share",
                         "Security Deposit",
                         "LOI Status",
                         "Days Pending",
@@ -1242,26 +1230,71 @@ export default function App({
                               {outlet.areaManager}
                             </td>
 
-                            {/* <td style={{ padding: "13px 18px", fontSize: 12, color: colors.primary, fontWeight: 500 }}>{outlet.submittedBy}</td> */}
-                            <td style={{ padding: "13px 18px" }}>
-                              <div
-                                style={{
-                                  fontWeight: 700,
-                                  fontSize: 12,
-                                  color: colors.primary,
-                                }}
-                              >
-                                {fmt(outlet?.rentAmount)}
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: 10,
-                                  color: colors.neutralText,
-                                }}
-                              >
-                                per month
-                              </div>
+
+                             {/* rent model*/}
+                            <td
+                              style={{
+                                padding: "13px 18px",
+                                fontSize: 12,
+                                color: colors.neutralText,
+                              }}
+                            >
+                              {handleRentModelName(outlet?.rentModel)}
                             </td>
+
+
+                            {/* rent model*/}
+                            <td
+                              style={{
+                                padding: "13px 18px",
+                                fontSize: 12,
+                                color: colors.primary,
+                                fontWeight: 700,
+                              }}
+                            >
+
+                                {outlet?.rentModel==="fixedRent" && fmt(isNaN(Number(outlet?.fixedRentAmount)) ? 0 : (Number(outlet?.fixedRentAmount)))}
+                              
+                            </td>
+
+                            {/*revenue share*/}
+                            <td
+                              style={{
+                                padding: "13px 18px",
+                                fontSize: 12,
+                                color: colors.primary,
+                                fontWeight: 700,
+                              }}
+                            >
+
+                                {outlet?.rentModel==="revShare" && outlet?.revSharePercent+"%"}
+                              
+                            </td>
+
+
+
+                            {/*rent + revenue share*/}
+                            <td
+                              style={{
+                                padding: "13px 18px",
+                                fontSize: 12,
+                                color: colors.primary,
+                                fontWeight: 700,
+                              }}
+                            >
+
+                                {outlet?.rentModel==="fixedRentWithRevShare" && (
+                                  fmt(isNaN(Number(outlet?.fixedRentAmount)) ? 0 : (Number(outlet?.fixedRentAmount)))
+                                  +
+                                  " + " +
+                                  outlet?.revSharePercent+"%"
+                                )}
+                              
+                            </td>
+
+                          
+
+                         {/* SD amount */}
                             <td style={{ padding: "13px 18px" }}>
                               <div
                                 style={{
@@ -1270,7 +1303,7 @@ export default function App({
                                   color: "#204877",
                                 }}
                               >
-                                {fmt(outlet?.sdAmount)}
+                                {fmt(isNaN(Number(outlet?.sdAmount)) ? 0 : (Number(outlet?.sdAmount)))}
                               </div>
                               <div
                                 style={{
@@ -1292,9 +1325,9 @@ export default function App({
                                   fontWeight: 700,
                                 }}
                               >
-                                {outlet.outletStatus === "Pending"
-                                  ? "Missing"
-                                  : "Uploaded"}
+                                {outlet.loiDocument
+                                  ? "Uploaded"
+                                  : "Missing"}
                               </span>
                             </td>
                             <td style={{ padding: "13px 18px" }}>
@@ -1547,7 +1580,7 @@ export default function App({
                               [
                                 {
                                   label: "APPROVED DATE",
-                                  value: outlet?.approvedDate, //todo
+                                  value: outlet?.approvedDate, 
                                   color: colors.primary,
                                 },
                                 {
@@ -1556,8 +1589,28 @@ export default function App({
                                   color: colors.primary,
                                 },
                                 {
+                                  label: "RENT MODEL",
+                                  value: handleRentModelName(outlet?.rentModel),
+                                  color: colors.primary,
+                                },
+                                {
                                   label: "RENT/MONTH",
-                                  value: fmt(outlet.rentAmount),
+                                  value: outlet?.rentModel==="fixedRent" && fmt(isNaN(Number(outlet?.fixedRentAmount)) ? 0 : (Number(outlet?.fixedRentAmount))),
+                                  color: colors.primary,
+                                },
+                                 {
+                                  label: "REVENUE SHARE",
+                                  value: outlet?.rentModel==="revShare" && outlet?.revSharePercent+"%",
+                                  color: colors.primary,
+                                },
+                                 {
+                                  label: "RENT + REVENUE SHARE",
+                                  value: outlet?.rentModel==="fixedRentWithRevShare" && (
+                                  fmt(isNaN(Number(outlet?.fixedRentAmount)) ? 0 : (Number(outlet?.fixedRentAmount)))
+                                  +
+                                  " + " +
+                                  outlet?.revSharePercent+"%"
+                                ),
                                   color: colors.primary,
                                 },
                                 {
@@ -1748,26 +1801,7 @@ export default function App({
                             flexWrap: "wrap",
                           }}
                         >
-                          <div>
-                            <div
-                              style={{
-                                fontSize: 10,
-                                color: colors.neutralText,
-                                fontWeight: 600,
-                              }}
-                            >
-                              REJECTED DATE
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 12,
-                                fontWeight: 700,
-                                color: "#721426",
-                              }}
-                            >
-                              {outlet?.rejectedDate}
-                            </div>
-                          </div>
+                        
                           <div>
                             <div
                               style={{
@@ -1788,6 +1822,31 @@ export default function App({
                               Admin
                             </div>
                           </div>
+
+
+                          {/* rent model */}
+                          <div>
+                            <div
+                              style={{
+                                fontSize: 10,
+                                color: colors.neutralText,
+                                fontWeight: 600,
+                              }}
+                            >
+                              RENT MODEL
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 700,
+                                color: colors.primary,
+                              }}
+                            >
+                              {handleRentModelName(outlet?.rentModel)}
+                            </div>
+                          </div>
+
+                           {/* rent / month */}
                           <div>
                             <div
                               style={{
@@ -1805,9 +1864,61 @@ export default function App({
                                 color: colors.primary,
                               }}
                             >
-                              {fmt(outlet.rentAmount)}
+                              {outlet?.rentModel==="fixedRent" && fmt(isNaN(Number(outlet?.fixedRentAmount)) ? 0 : (Number(outlet?.fixedRentAmount)))}
                             </div>
                           </div>
+
+
+                          {/* revenue share */}
+                          <div>
+                            <div
+                              style={{
+                                fontSize: 10,
+                                color: colors.neutralText,
+                                fontWeight: 600,
+                              }}
+                            >
+                              REVENUE SHARE
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 700,
+                                color: colors.primary,
+                              }}
+                            >
+                              {outlet?.rentModel==="revShare" && outlet?.revSharePercent+"%"}
+                            </div>
+                          </div>
+
+                          {/* Rent + Revenue Share */}
+                          <div>
+                            <div
+                              style={{
+                                fontSize: 10,
+                                color: colors.neutralText,
+                                fontWeight: 600,
+                              }}
+                            >
+                              RENT + REVENUE SHARE
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 700,
+                                color: colors.primary,
+                              }}
+                            >
+                              {outlet?.rentModel==="fixedRentWithRevShare" && (
+                                  fmt(isNaN(Number(outlet?.fixedRentAmount)) ? 0 : (Number(outlet?.fixedRentAmount)))
+                                  +
+                                  " + " +
+                                  outlet?.revSharePercent+"%"
+                                )}
+                            </div>
+                          </div>
+
+
                           <div>
                             <div
                               style={{
@@ -1825,7 +1936,7 @@ export default function App({
                                 color: "#204877",
                               }}
                             >
-                              {fmt(outlet.sdAmount)}
+                              {fmt(isNaN(Number(outlet.sdAmount)) ? 0 : (Number(outlet.sdAmount)))}
                             </div>
                           </div>
                           <div>
@@ -1841,10 +1952,10 @@ export default function App({
                             <span
                               style={{
                                 background: loiStatusStyle(
-                                  outlet?.LOIDoc ? "Uploaded" : "Missing",
+                                  outlet?.loiDocument ? "Uploaded" : "Missing",
                                 ).bg,
                                 color: loiStatusStyle(
-                                  outlet?.LOIDoc ? "Uploaded" : "Missing",
+                                  outlet?.loiDocument ? "Uploaded" : "Missing",
                                 ).text,
                                 borderRadius: 20,
                                 padding: "2px 10px",
@@ -1883,7 +1994,7 @@ export default function App({
                               lineHeight: 1.6,
                             }}
                           >
-                            {outlet?.rejectedReason}
+                            {outlet?.rejectionReason}
                           </div>
                         </div>
                       </div>
@@ -1911,16 +2022,7 @@ export default function App({
                         >
                           ✕
                         </div>
-                        <div
-                          style={{
-                            fontSize: 10,
-                            color: colors.neutralText,
-                            textAlign: "center",
-                            maxWidth: 60,
-                          }}
-                        >
-                          Rejected Date //todo
-                        </div>
+                      
                       </div>
                     </div>
                   </div>
@@ -1997,64 +2099,7 @@ export default function App({
               </div>
             </div>
             <div style={{ flex: 1, padding: "22px 26px", overflow: "auto" }}>
-              <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
-                <div
-                  style={{
-                    flex: 1,
-                    background: colors.secondarySurface,
-                    borderRadius: 13,
-                    padding: "13px 16px",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 9,
-                      color: colors.neutralText,
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      marginBottom: 5,
-                    }}
-                  >
-                    Monthly Rent
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 20,
-                      fontWeight: 800,
-                      color: colors.primary,
-                    }}
-                  >
-                    {fmt(loiOutlet.rentAmount)}
-                  </div>
-                </div>
-                <div
-                  style={{
-                    flex: 1,
-                    background: "#D5F3FF",
-                    borderRadius: 13,
-                    padding: "13px 16px",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 9,
-                      color: "#204877",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                      marginBottom: 5,
-                    }}
-                  >
-                    Security Deposit
-                  </div>
-                  <div
-                    style={{ fontSize: 20, fontWeight: 800, color: "#204877" }}
-                  >
-                    {fmt(loiOutlet.sdAmount)}
-                  </div>
-                </div>
-              </div>
+             
               <div
                 style={{
                   background: colors.secondarySurface,
@@ -2102,7 +2147,7 @@ export default function App({
                     cursor: "pointer",
                   }}
 
-                  onClick={()=>handleViewLOI(loiOutlet?.LOIDoc)}
+                  onClick={()=>handleViewLOI(loiOutlet?.loiDocument)}
                 >
                   👁 View
                 </button>
