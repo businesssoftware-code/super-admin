@@ -76,6 +76,12 @@ function OnboardedOutletsWrapper() {
     daysPendingForLOIApproval: el?.daysPendingForLOIApproval ?? 0,
     stageIndicators: el?.stageIndicators ?? [],
     overallProgress: el?.overallProgress ?? 0,
+    approvedDate: el?.approvedDate ?? "",
+    rejectedDate: el?.rejectedDate ?? "",
+    LIODoc: el?.LOIDoc ?? "",
+    rejectedReason: el?.rejectedReason ?? "",
+    createdAt: el?.createdAt ?? "",
+    areaManager: el?.areaManager ?? "",
     
   }));
 
