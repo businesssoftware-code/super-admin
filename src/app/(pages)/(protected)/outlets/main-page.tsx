@@ -2,13 +2,16 @@
 
 import { getErrorMessage, privateApi } from "@/app/libs/axios";
 import { formatDateWithOrdinal } from "@/app/libs/functions";
-import { ApiOutlet, TypeOfOutletDashboard, TypeOfStageIndicators } from "@/app/libs/types";
+import {
+  ApiOutlet,
+  TypeOfOutletDashboard,
+  TypeOfStageIndicators,
+} from "@/app/libs/types";
 import React, { useState } from "react";
 import { toast } from "sonner";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 type LOIStatus = "Uploaded" | "Missing" | "Updated";
-type OutletStatus = "Pending" | "Approved" | "Rejected";
 type NotifType = "urgent" | "warning" | "success" | "info";
 type FilterType =
   | "All"
@@ -18,37 +21,11 @@ type FilterType =
   | "In-Progress"
   | "Urgent";
 type TabId = "pending" | "approved" | "rejected";
-type TravelMode = "driving" | "walking" | "transit" | "bicycling";
 
-interface PendingOutlet {
-  id: number;
-  name: string;
-  area: string;
-  warehouse: string;
-  submittedBy: string;
-  submittedDate: string;
-  daysPending: number;
-  loiStatus: LOIStatus;
-  status: OutletStatus;
-  rentAmount: number;
-  sdAmount: number;
-}
 
-interface ApprovedOutlet {
-  id: number;
-  name: string;
-  area: string;
-  warehouse: string;
-  submittedBy: string;
-  approvedDate: string;
-  approvedBy: string;
-  rentAmount: number;
-  sdAmount: number;
-  loiStatus: LOIStatus;
-  ongoingPhase: number;
-  lastUpdated: string;
-  notes: string;
-}
+
+
+
 
 interface RejectedOutlet {
   id: number;
@@ -135,7 +112,6 @@ const colors = {
 
 const fmt = (n: number): string => "₹" + n.toLocaleString("en-IN");
 
-
 const PHASES: string[] = [
   "Agreement Signed",
   "Fit-out In Progress",
@@ -143,7 +119,6 @@ const PHASES: string[] = [
   "Trial Run",
   "Live",
 ];
-
 
 const initialRejected: RejectedOutlet[] = [
   {
@@ -278,11 +253,12 @@ const notifTypeStyle = (t: NotifType): NotifTypeStyle =>
         ? { dot: "#2E7D32", bg: "#EBFFD6" }
         : { dot: "#204877", bg: "#D5F3FF" };
 
-type TypeOngoingProgressProps =  {
+type TypeOngoingProgressProps = {
   overallProgress: number;
-}
-const OngoingProgress: React.FC<TypeOngoingProgressProps> = ({ overallProgress }) => {
-
+};
+const OngoingProgress: React.FC<TypeOngoingProgressProps> = ({
+  overallProgress,
+}) => {
   return (
     <div>
       <div
@@ -302,7 +278,9 @@ const OngoingProgress: React.FC<TypeOngoingProgressProps> = ({ overallProgress }
         >
           {"Progress"}
         </span>
-        <span style={{ fontSize: 10, color: colors.info, fontWeight: 700,}}>{overallProgress}%</span>
+        <span style={{ fontSize: 10, color: colors.info, fontWeight: 700 }}>
+          {overallProgress}%
+        </span>
       </div>
       <div
         style={{
@@ -328,75 +306,64 @@ const OngoingProgress: React.FC<TypeOngoingProgressProps> = ({ overallProgress }
 
 type TypePhaseStepperProps = {
   stageIndicators: TypeOfStageIndicators[];
-}
+};
 const PhaseStepper: React.FC<TypePhaseStepperProps> = ({ stageIndicators }) => (
-
-
   <div style={{ display: "flex", alignItems: "center" }}>
-  
-  {stageIndicators?.map((p, i) => {
-    const progress = p?.progress ?? 0;
-    const done = progress === 100;
-    const active = progress > 0 && progress < 100;
+    {stageIndicators?.map((p, i) => {
+      const progress = p?.progress ?? 0;
+      const done = progress === 100;
+      const active = progress > 0 && progress < 100;
 
-    return (
-      <React.Fragment key={p.stageName}>
-        {/* Step */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          {/* Stage Name */}
-          <div style={{ marginBottom: 8, fontSize: 12 }}>
-            {p.stageName}
-          </div>
-
-          {/* Circle */}
+      return (
+        <React.Fragment key={p.stageName}>
+          {/* Step */}
           <div
             style={{
-              width: 28,
-              height: 28,
-              borderRadius: "50%",
-              background: done
-                ? colors.secondary
-                : active
-                ? colors.primary
-                : "#F0F0E8",
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
-              justifyContent: "center",
-              color: done
-                ? colors.primary
-                : active
-                ? "#ffffff"
-                : "#0000000",
             }}
           >
-            {done ? "✓" : i + 1}
-          </div>
-        </div>
+            {/* Stage Name */}
+            <div style={{ marginBottom: 8, fontSize: 12 }}>{p.stageName}</div>
 
-        {/* Connector */}
-        {i < stageIndicators.length - 1 && (
-          <div
-            style={{
-              flex: 1,
-              height: 2,
-              background:
-                stageIndicators[i]?.progress === 100
-                  ? "#CBFF99"
-                  : "#F0F0E8",
-              margin: "0 8px",
-            }}
-          />
-        )}
-      </React.Fragment>
-    );
-  })}
-</div>
+            {/* Circle */}
+            <div
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: "50%",
+                background: done
+                  ? colors.secondary
+                  : active
+                    ? colors.primary
+                    : "#F0F0E8",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: done ? colors.primary : active ? "#ffffff" : "#0000000",
+              }}
+            >
+              {done ? "✓" : i + 1}
+            </div>
+          </div>
+
+          {/* Connector */}
+          {i < stageIndicators.length - 1 && (
+            <div
+              style={{
+                flex: 1,
+                height: 2,
+                background:
+                  stageIndicators[i]?.progress === 100 ? "#CBFF99" : "#F0F0E8",
+                margin: "0 8px",
+              }}
+            />
+          )}
+        </React.Fragment>
+      );
+    })}
+  </div>
 );
 
 type TypeOfPageProps = {
@@ -467,23 +434,27 @@ export default function App({
           city: el?.city ?? "",
           status: el?.status ?? "",
           daysPendingForLOIApproval: el?.daysPendingForLOIApproval ?? 0,
+          approvedDate: el?.approvedDate ?? "",
+          rejectedDate: el?.rejectedDate ?? "",
+          LIODoc: el?.LOIDoc ?? "",
+          rejectedReason: el?.rejectedReason ?? "",
+          createdAt: el?.createdAt ?? "",
+          areaManager: el?.areaManager ?? "",
+
         }));
 
         setOutlets(mappedOutlets);
         setDashboard(responseOfDashboard.data);
 
         toast.dismiss(toastId);
-
       } else {
         toast.error("Something went wrong", { id: toastId, duration: 3000 });
       }
     } catch (err) {
-
       toast.error(getErrorMessage(err) || "An error occurred.", {
         id: toastId,
         duration: 3000,
       });
-
     }
   };
 
@@ -492,7 +463,6 @@ export default function App({
     outletId: number,
     reason?: string,
   ) => {
-
     const toastId = toast.loading(
       stage === "approval" ? "Approving outlet..." : "Rejecting outlet...",
     );
@@ -500,7 +470,6 @@ export default function App({
     const payload = stage === "approval" ? {} : { rejectionReason: reason };
 
     try {
-
       const response = await privateApi.patch(
         `/outlets/${outletId}/${stage}`,
         payload,
@@ -566,19 +535,19 @@ export default function App({
     {
       id: "pending",
       label: "Pending",
-      count: outlets?.filter((o)=>o.outletStatus === "Pending")?.length ?? 0,
+      count: outlets?.filter((o) => o.outletStatus === "Pending")?.length ?? 0,
       color: "#FFFC83",
     },
     {
       id: "approved",
       label: "Approved",
-      count: outlets?.filter((o)=>o.outletStatus === "Approved")?.length ?? 0,
+      count: outlets?.filter((o) => o.outletStatus === "Approved")?.length ?? 0,
       color: "#CBFF99",
     },
     {
       id: "rejected",
       label: "Rejected",
-      count: outlets?.filter((o)=>o.outletStatus === "Rejected")?.length ?? 0,
+      count: outlets?.filter((o) => o.outletStatus === "Rejected")?.length ?? 0,
       color: "#FDE8EC",
     },
   ];
@@ -616,7 +585,14 @@ export default function App({
     },
   ];
 
-  console.log(confirmModal, "confirmModalconfirmModalconfirmModal");
+  
+  const handleViewLOI  = (LOIPdf: string) => {
+
+    if(!LOIPdf) return;
+    window.open(LOIPdf, "_blank", "noopener,noreferrer");
+
+  }
+
 
   return (
     <div
@@ -1159,8 +1135,10 @@ export default function App({
                   <thead>
                     <tr style={{ background: colors.secondarySurface }}>
                       {[
+                        "Date",
                         "Outlet Name",
                         "Location",
+                        "Area Manager",
                         "Rent / Month",
                         "Security Deposit",
                         "LOI Status",
@@ -1218,6 +1196,20 @@ export default function App({
                               (e.currentTarget.style.background = "transparent")
                             }
                           >
+
+                            <td style={{ padding: "13px 18px" }}>
+                              <div
+                                style={{
+                                  fontWeight: 700,
+                                  fontSize: 13,
+                                  color: colors.primary,
+                                }}
+                              >
+                                {outlet.createdAt ?? "-"}
+                              </div>
+                              {/* <div style={{ fontSize: 10, color: colors.neutralText }}>{outlet.warehouse}</div> */} 
+                            </td>
+
                             <td style={{ padding: "13px 18px" }}>
                               <div
                                 style={{
@@ -1228,7 +1220,7 @@ export default function App({
                               >
                                 {outlet.outletName}
                               </div>
-                              {/* <div style={{ fontSize: 10, color: colors.neutralText }}>{outlet.warehouse}</div> */}
+                              {/* <div style={{ fontSize: 10, color: colors.neutralText }}>{outlet.warehouse}</div> */} 
                             </td>
                             <td
                               style={{
@@ -1239,6 +1231,17 @@ export default function App({
                             >
                               {outlet.city}
                             </td>
+                             {/* area manager */}
+                            <td
+                              style={{
+                                padding: "13px 18px",
+                                fontSize: 12,
+                                color: colors.neutralText,
+                              }}
+                            >
+                              {outlet.areaManager}
+                            </td>
+
                             {/* <td style={{ padding: "13px 18px", fontSize: 12, color: colors.primary, fontWeight: 500 }}>{outlet.submittedBy}</td> */}
                             <td style={{ padding: "13px 18px" }}>
                               <div
@@ -1406,7 +1409,15 @@ export default function App({
                 </div>
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                {(["All", "In-Progress", "On-Hold", "Completed", "Cancelled"] as FilterType[]).map((f) => (
+                {(
+                  [
+                    "All",
+                    "In-Progress",
+                    "On-Hold",
+                    "Completed",
+                    "Cancelled",
+                  ] as FilterType[]
+                ).map((f) => (
                   <button
                     key={f}
                     onClick={() => setActiveFilter(f)}
@@ -1434,12 +1445,18 @@ export default function App({
             </div>
 
             <div style={{ display: "grid", gap: 14 }}>
-              {outlets?.filter(
+              {outlets
+                ?.filter(
                   (a: ApiOutlet) =>
-                    a.outletStatus === "Approved" && (activeFilter === "All" ||
-                    (activeFilter === "In-Progress"
-                      ? (a.status === "onTrack" || a.status==="inProgress")
-                      : (activeFilter === "On-Hold" ? a.status === "onHold" : (activeFilter === "Completed" ? a.status === "completed" : a.status === "cancelled")))),
+                    a.outletStatus === "Approved" &&
+                    (activeFilter === "All" ||
+                      (activeFilter === "In-Progress"
+                        ? a.status === "onTrack" || a.status === "inProgress"
+                        : activeFilter === "On-Hold"
+                          ? a.status === "onHold"
+                          : activeFilter === "Completed"
+                            ? a.status === "completed"
+                            : a.status === "cancelled")),
                 )
                 .map((outlet: ApiOutlet) => {
                   const isLive: boolean = activeFilter === "In-Progress";
@@ -1530,7 +1547,7 @@ export default function App({
                               [
                                 {
                                   label: "APPROVED DATE",
-                                  value: "", //todo
+                                  value: outlet?.approvedDate, //todo
                                   color: colors.primary,
                                 },
                                 {
@@ -1577,10 +1594,13 @@ export default function App({
                             ))}
                           </div>
                           <div style={{ marginBottom: 10 }}>
-                            <PhaseStepper stageIndicators={outlet?.stageIndicators} />
+                            <PhaseStepper
+                              stageIndicators={outlet?.stageIndicators}
+                            />
                           </div>
-                          <OngoingProgress overallProgress={outlet?.overallProgress ?? 0} />
-                         
+                          <OngoingProgress
+                            overallProgress={outlet?.overallProgress ?? 0}
+                          />
                         </div>
                         <div
                           style={{
@@ -1618,7 +1638,6 @@ export default function App({
                               {outlet?.overallProgress + "%"}
                             </div>
                           </div>
-                         
                         </div>
                       </div>
                     </div>
@@ -1648,259 +1667,264 @@ export default function App({
               </div>
             </div>
             <div style={{ display: "grid", gap: 14 }}>
-              {outlets?.filter((el)=>el.outletStatus === "Rejected")?.map((outlet: ApiOutlet) => (
-                <div
-                  key={outlet.outletId}
-                  style={{
-                    background: colors.white,
-                    borderRadius: 20,
-                    padding: "20px 24px",
-                    boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
-                    border: "1.5px solid #FDE8EC",
-                    position: "relative",
-                    overflow: "hidden",
-                  }}
-                >
+              {outlets
+                ?.filter((el) => el.outletStatus === "Rejected")
+                ?.map((outlet: ApiOutlet) => (
                   <div
+                    key={outlet.outletId}
                     style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: 3,
-                      background:
-                        "linear-gradient(90deg, #F5A0B0, transparent)",
-                    }}
-                  />
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: 20,
-                      alignItems: "flex-start",
+                      background: colors.white,
+                      borderRadius: 20,
+                      padding: "20px 24px",
+                      boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
+                      border: "1.5px solid #FDE8EC",
+                      position: "relative",
+                      overflow: "hidden",
                     }}
                   >
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 10,
-                          marginBottom: 4,
-                        }}
-                      >
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 3,
+                        background:
+                          "linear-gradient(90deg, #F5A0B0, transparent)",
+                      }}
+                    />
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 20,
+                        alignItems: "flex-start",
+                      }}
+                    >
+                      <div style={{ flex: 1, minWidth: 0 }}>
                         <div
                           style={{
-                            fontWeight: 800,
-                            fontSize: 15,
-                            color: colors.primary,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            marginBottom: 4,
                           }}
                         >
-                          {outlet?.outletName ?? ""}
-                        </div>
-                        <span
-                          style={{
-                            background: "#FDE8EC",
-                            color: "#721426",
-                            borderRadius: 20,
-                            padding: "2px 10px",
-                            fontSize: 10,
-                            fontWeight: 800,
-                          }}
-                        >
-                          ✕ Rejected
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 12,
-                          color: colors.neutralText,
-                          marginBottom: 12,
-                        }}
-                      >
-                        {outlet?.city ?? ""}
-                        
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: 16,
-                          marginBottom: 14,
-                          flexWrap: "wrap",
-                        }}
-                      >
-                        <div>
                           <div
                             style={{
-                              fontSize: 10,
-                              color: colors.neutralText,
-                              fontWeight: 600,
-                            }}
-                          >
-                            REJECTED DATE
-                          </div>
-                          <div
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 700,
-                              color: "#721426",
-                            }}
-                          >
-                            Rejected Date //todo
-                          </div>
-                        </div>
-                        <div>
-                          <div
-                            style={{
-                              fontSize: 10,
-                              color: colors.neutralText,
-                              fontWeight: 600,
-                            }}
-                          >
-                            REJECTED BY
-                          </div>
-                          <div
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 700,
+                              fontWeight: 800,
+                              fontSize: 15,
                               color: colors.primary,
                             }}
                           >
-                            Admin
-                          </div>
-                        </div>
-                        <div>
-                          <div
-                            style={{
-                              fontSize: 10,
-                              color: colors.neutralText,
-                              fontWeight: 600,
-                            }}
-                          >
-                            RENT/MONTH
-                          </div>
-                          <div
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 700,
-                              color: colors.primary,
-                            }}
-                          >
-                            {fmt(outlet.rentAmount)}
-                          </div>
-                        </div>
-                        <div>
-                          <div
-                            style={{
-                              fontSize: 10,
-                              color: "#204877",
-                              fontWeight: 600,
-                            }}
-                          >
-                            SECURITY DEPOSIT
-                          </div>
-                          <div
-                            style={{
-                              fontSize: 12,
-                              fontWeight: 700,
-                              color: "#204877",
-                            }}
-                          >
-                            {fmt(outlet.sdAmount)}
-                          </div>
-                        </div>
-                        <div>
-                          <div
-                            style={{
-                              fontSize: 10,
-                              color: colors.neutralText,
-                              fontWeight: 600,
-                            }}
-                          >
-                            LOI STATUS
+                            {outlet?.outletName ?? ""}
                           </div>
                           <span
                             style={{
-                              background: loiStatusStyle(outlet?.outletStatus==="Rejected" ? "Uploaded" : "Missing").bg,
-                              color: loiStatusStyle(outlet?.outletStatus==="Rejected" ? "Uploaded" : "Missing").text, //todo
+                              background: "#FDE8EC",
+                              color: "#721426",
                               borderRadius: 20,
                               padding: "2px 10px",
                               fontSize: 10,
-                              fontWeight: 700,
+                              fontWeight: 800,
                             }}
                           >
-                            LOI Status //todo
+                            ✕ Rejected
                           </span>
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          background: "#FDE8EC",
-                          borderRadius: 12,
-                          padding: "12px 16px",
-                          borderLeft: "4px solid #721426",
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: 10,
-                            fontWeight: 700,
-                            color: "#721426",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.5px",
-                            marginBottom: 5,
-                          }}
-                        >
-                          Rejection Reason
                         </div>
                         <div
                           style={{
                             fontSize: 12,
-                            color: "#4A0D1A",
-                            lineHeight: 1.6,
+                            color: colors.neutralText,
+                            marginBottom: 12,
                           }}
                         >
-                           Reason //todo
+                          {outlet?.city ?? ""}
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 16,
+                            marginBottom: 14,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                fontSize: 10,
+                                color: colors.neutralText,
+                                fontWeight: 600,
+                              }}
+                            >
+                              REJECTED DATE
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 700,
+                                color: "#721426",
+                              }}
+                            >
+                              {outlet?.rejectedDate}
+                            </div>
+                          </div>
+                          <div>
+                            <div
+                              style={{
+                                fontSize: 10,
+                                color: colors.neutralText,
+                                fontWeight: 600,
+                              }}
+                            >
+                              REJECTED BY
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 700,
+                                color: colors.primary,
+                              }}
+                            >
+                              Admin
+                            </div>
+                          </div>
+                          <div>
+                            <div
+                              style={{
+                                fontSize: 10,
+                                color: colors.neutralText,
+                                fontWeight: 600,
+                              }}
+                            >
+                              RENT/MONTH
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 700,
+                                color: colors.primary,
+                              }}
+                            >
+                              {fmt(outlet.rentAmount)}
+                            </div>
+                          </div>
+                          <div>
+                            <div
+                              style={{
+                                fontSize: 10,
+                                color: "#204877",
+                                fontWeight: 600,
+                              }}
+                            >
+                              SECURITY DEPOSIT
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 700,
+                                color: "#204877",
+                              }}
+                            >
+                              {fmt(outlet.sdAmount)}
+                            </div>
+                          </div>
+                          <div>
+                            <div
+                              style={{
+                                fontSize: 10,
+                                color: colors.neutralText,
+                                fontWeight: 600,
+                              }}
+                            >
+                              LOI STATUS
+                            </div>
+                            <span
+                              style={{
+                                background: loiStatusStyle(
+                                  outlet?.LOIDoc ? "Uploaded" : "Missing",
+                                ).bg,
+                                color: loiStatusStyle(
+                                  outlet?.LOIDoc ? "Uploaded" : "Missing",
+                                ).text,
+                                borderRadius: 20,
+                                padding: "2px 10px",
+                                fontSize: 10,
+                                fontWeight: 700,
+                              }}
+                            >
+                              {outlet?.outletStatus}
+                            </span>
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            background: "#FDE8EC",
+                            borderRadius: 12,
+                            padding: "12px 16px",
+                            borderLeft: "4px solid #721426",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 700,
+                              color: "#721426",
+                              textTransform: "uppercase",
+                              letterSpacing: "0.5px",
+                              marginBottom: 5,
+                            }}
+                          >
+                            Rejection Reason
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 12,
+                              color: "#4A0D1A",
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            {outlet?.rejectedReason}
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: 4,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: "50%",
+                            background: "#FDE8EC",
+                            border: "2px solid #F5A0B0",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 18,
+                          }}
+                        >
+                          ✕
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 10,
+                            color: colors.neutralText,
+                            textAlign: "center",
+                            maxWidth: 60,
+                          }}
+                        >
+                          Rejected Date //todo
                         </div>
                       </div>
                     </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 4,
-                        flexShrink: 0,
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: "50%",
-                          background: "#FDE8EC",
-                          border: "2px solid #F5A0B0",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: 18,
-                        }}
-                      >
-                        ✕
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 10,
-                          color: colors.neutralText,
-                          textAlign: "center",
-                          maxWidth: 60,
-                        }}
-                      >
-                        Rejected Date //todo
-                      </div>
-                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         )}
@@ -2029,16 +2053,6 @@ export default function App({
                   >
                     {fmt(loiOutlet.sdAmount)}
                   </div>
-                  <div
-                    style={{
-                      fontSize: 10,
-                      color: "#204877",
-                      opacity: 0.7,
-                      marginTop: 2,
-                    }}
-                  >
-                    {loiOutlet.sdAmount / loiOutlet.rentAmount}× monthly rent
-                  </div>
                 </div>
               </div>
               <div
@@ -2074,6 +2088,26 @@ export default function App({
                 >
                   {loiOutlet.outletName} · {loiOutlet?.outletStatus}
                 </div>
+                 {/* view LOI */}
+                <button
+                  style={{
+                    marginTop: 18,
+                    padding: "9px",
+                    background: colors.secondary,
+                    color: colors.primary,
+                    border: "none",
+                    borderRadius: 10,
+                    fontWeight: 700,
+                    fontSize: 12,
+                    cursor: "pointer",
+                  }}
+
+                  onClick={()=>handleViewLOI(loiOutlet?.LOIDoc)}
+                >
+                  👁 View
+                </button>
+
+                {/* Download LOI */}
                 <button
                   style={{
                     marginTop: 18,

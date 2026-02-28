@@ -63,13 +63,19 @@ export interface ApiOutlet {
   daysPendingForLOIApproval: number;
   stageIndicators: TypeOfStageIndicators[];
   overallProgress: number;
+  approvedDate: string;
+  rejectedDate: string;
+  rejectedReason: string;
+  LOIDoc: string;
+  createdAt: string;
+  areaManager: string;
 
 }
 
 export type NsoStages={
   completedTasks:number;
   completionPercentage:number;
-  endDate:string|null;
+endDate:string|null;
   stageId:number;
   stageName:string;
   startDate:string;
