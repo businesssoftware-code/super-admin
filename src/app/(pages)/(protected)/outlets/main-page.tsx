@@ -540,7 +540,7 @@ export default function App({
 
 
   const handleRentModelName = (rentModel: string) => {
-    return rentModel==="fixedRent" ? "Fixed Rent" : (rentModel==="fixedRentWithRevShare" ? "Fixed Rent with Revenue Share" : (rentModel==="revShare" ? "Revenue Share" : ""));
+    return rentModel==="fixedRent" ? "Fixed Rent" : (rentModel==="fixedRentWithRevShare" ? "Fixed Rent + Revenue Share" : (rentModel==="revShare" ? "Revenue Share" : ""));
   }
 
 
