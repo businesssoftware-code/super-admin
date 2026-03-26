@@ -24,23 +24,6 @@ type TabId = "pending" | "approved" | "rejected";
 
 
 
-
-
-
-interface RejectedOutlet {
-  id: number;
-  name: string;
-  area: string;
-  warehouse: string;
-  submittedBy: string;
-  rejectedDate: string;
-  rejectedBy: string;
-  rentAmount: number;
-  sdAmount: number;
-  loiStatus: LOIStatus;
-  reason: string;
-}
-
 interface Notification {
   id: number;
   type: NotifType;
@@ -56,10 +39,7 @@ interface ConfirmModal {
   action: "Approved" | "Rejected";
 }
 
-interface Toast {
-  msg: string;
-  type: "success" | "error";
-}
+
 
 interface UrgencyStyle {
   bg: string;
@@ -112,63 +92,7 @@ const colors = {
 
 const fmt = (n: number): string => "₹" + n.toLocaleString("en-IN");
 
-const PHASES: string[] = [
-  "Agreement Signed",
-  "Fit-out In Progress",
-  "Stock Loaded",
-  "Trial Run",
-  "Live",
-];
 
-
-
-const initialNotifications: Notification[] = [
-  {
-    id: 1,
-    type: "urgent",
-    icon: "🚨",
-    title: "Sunrise Mart is overdue",
-    body: "5 days pending — immediate review required.",
-    time: "2 min ago",
-    read: false,
-  },
-  {
-    id: 2,
-    type: "urgent",
-    icon: "🚨",
-    title: "Green Valley Store overdue",
-    body: "4 days pending — LOI uploaded and awaiting decision.",
-    time: "18 min ago",
-    read: false,
-  },
-  {
-    id: 3,
-    type: "warning",
-    icon: "⚠️",
-    title: "LOI Missing — Metro Express",
-    body: "Outlet submission incomplete. LOI not uploaded yet.",
-    time: "1 hr ago",
-    read: false,
-  },
-  {
-    id: 4,
-    type: "success",
-    icon: "✅",
-    title: "TechMart Plus approved",
-    body: "Approved yesterday. Currently in Trial Run phase.",
-    time: "Yesterday",
-    read: true,
-  },
-  {
-    id: 5,
-    type: "info",
-    icon: "📋",
-    title: "Heritage Kirana submitted",
-    body: "Heritage Kirana submitted by Suresh Patel (Central Zone).",
-    time: "3 days ago",
-    read: true,
-  },
-];
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 const getUrgencyColor = (days: number): UrgencyStyle => {
@@ -2153,7 +2077,8 @@ export default function App({
                 </button>
 
                 {/* Download LOI */}
-                <button
+                <a href={loiOutlet?.loiDocument} download target="_blank" rel="noopener noreferrer">
+                   <button
                   style={{
                     marginTop: 18,
                     padding: "9px 22px",
@@ -2168,6 +2093,8 @@ export default function App({
                 >
                   ⬇ Download PDF
                 </button>
+                </a>
+                
               </div>
             </div>
             <div
