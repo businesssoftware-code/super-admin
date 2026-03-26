@@ -65,7 +65,7 @@ export interface ApiOutlet {
   overallProgress: number;
   approvedDate: string;
   rejectionReason: string;
-  loiDocument: string;
+loiDocument: string;
   createdAt: string;
   areaManager: string;
   revSharePercent: number;

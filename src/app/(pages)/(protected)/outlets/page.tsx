@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-
+ 
 import { cookies } from "next/headers";
 import { Suspense, use } from "react";
 import MainPage from "./main-page";
