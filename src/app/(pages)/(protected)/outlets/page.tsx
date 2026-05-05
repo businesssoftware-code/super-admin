@@ -14,7 +14,6 @@ async function getOnboardedOutlets() {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value ?? "";
 
-  console.log(accessToken, "accessTokenaccessToken");
 
   const [resOfOutlets, resOfDashboard] = await Promise.all([
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_POINT}/nso/outlets`, {
@@ -54,7 +53,6 @@ function OnboardedOutletsWrapper() {
 
   if (!responseOnboardedOutlets || !responseOfDashboard) notFound();
 
-  console.log("Onboarded Outlets Response:", responseOfDashboard, responseOnboardedOutlets);
 
 
   const mappedOutlets = responseOnboardedOutlets?.map((el: ApiOutlet) => ({
