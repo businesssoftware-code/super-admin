@@ -53,7 +53,7 @@ function OnboardedOutletsWrapper() {
 
   if (!responseOnboardedOutlets || !responseOfDashboard) notFound();
 
-
+  console.log(responseOnboardedOutlets, "responseOnboardedOutletsresponseOnboardedOutlets123");
 
   const mappedOutlets = responseOnboardedOutlets?.map((el: ApiOutlet) => ({
    
@@ -79,6 +79,9 @@ function OnboardedOutletsWrapper() {
     rejectionReason: el?.rejectionReason ?? "",
     createdAt: formatDateWithShort(el?.createdAt ?? "") ?? "",
     areaManager: el?.areaManager ?? "",
+    outletPotentialBusiness: el?.outletPotentialBusiness,
+    outletAgreement: el?.outletAgreement,
+    weeklyOff: el?.weeklyOff ?? "",
     
   }));
 
