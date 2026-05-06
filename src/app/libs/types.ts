@@ -46,12 +46,32 @@ export type TypeOfStageIndicators =  {
     progress: number;
 }
 
+export type TypeOfOutletPotentialBusiness = {
+  outletId: number;
+  expectedFootfall: number;
+  presentBrands: number;
+  beveragesBrands:number;
+  healthyBrands: number;
+  brandsNames:string;
+  expectedRevenuePerMonth: number;
+  dailySalesOfOtherBrands: number
+}
 
+export type TypeOfOutletAgreement = {
+  outletId: number;
+  agreementTenureMonths: number;
+  securityDepositMonths: number;
+  lockInPeriodMonths: number;
+  noticePeriodMonths: number;
+  escalationPercentage: number;
+  fitOutPeriodDays: number;
+}
 export interface ApiOutlet {
   
   outletId: number;
   outletName: string;
   address: string;
+  weeklyOff: string;
   city: string;
   expectedDate: string;
   actualDate: string | null;
@@ -70,7 +90,8 @@ loiDocument: string;
   areaManager: string;
   revSharePercent: number;
   rentModel: string;
-  
+  outletPotentialBusiness: TypeOfOutletPotentialBusiness | null;
+  outletAgreement: TypeOfOutletAgreement | null;
 
 }
 

@@ -124,14 +124,41 @@ const loiStatusStyle = (s: LOIStatus): LOIStyle =>
       ? { bg: "#FDE8EC", text: "#721426" }
       : { bg: "#D5F3FF", text: "#204877" };
 
-const notifTypeStyle = (t: NotifType): NotifTypeStyle =>
-  t === "urgent"
-    ? { dot: "#721426", bg: "#FDE8EC" }
-    : t === "warning"
-      ? { dot: "#B89500", bg: "#FFFDE0" }
-      : t === "success"
-        ? { dot: "#2E7D32", bg: "#EBFFD6" }
-        : { dot: "#204877", bg: "#D5F3FF" };
+const InfoItem = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) => (
+  <div
+    style={{
+      background: colors.secondarySurface,
+      padding: "12px 14px",
+      borderRadius: 10,
+    }}
+  >
+    <div
+      style={{
+        fontSize: 11,
+        color: colors.neutralText,
+        marginBottom: 4,
+      }}
+    >
+      {label}
+    </div>
+
+    <div
+      style={{
+        fontSize: 13,
+        fontWeight: 700,
+        color: colors.primary,
+      }}
+    >
+      {value || "-"}
+    </div>
+  </div>
+);
 
 type TypeOngoingProgressProps = {
   overallProgress: number;
@@ -262,7 +289,7 @@ export default function App({
   const [loiOutlet, setLoiOutlet] = useState<ApiOutlet | null>(null);
   const [confirmModal, setConfirmModal] = useState<ConfirmModal | null>(null);
   const [comment, setComment] = useState<string>("");
-
+  console.log(onboardedOutlets, "onboardedOutletsonboardedOutlets");
   //outlets
   const [outlets, setOutlets] = useState<ApiOutlet[]>(onboardedOutlets);
 
@@ -284,6 +311,7 @@ export default function App({
         responseOfOultets?.status === 201 &&
         responseOfDashboard?.status === 200
       ) {
+        console.log(responseOfOultets, "responseOfOultetsresponseOfOultets");
         const mappedOutlets = responseOfOultets?.data?.map((el: ApiOutlet) => ({
           outletId: el?.outletId,
           outletName: el?.outletName,
@@ -320,6 +348,9 @@ export default function App({
           rejectionReason: el?.rejectionReason ?? "",
           createdAt: formatDateWithShort(el?.createdAt ?? "") ?? "",
           areaManager: el?.areaManager ?? "",
+          weeklyOff: el?.weeklyOff ?? "",
+          outletAgreement: el?.outletAgreement,
+          outletPotentialBusiness: el?.outletPotentialBusiness,
         }));
 
         setOutlets(mappedOutlets);
@@ -353,7 +384,6 @@ export default function App({
         `/outlets/${outletId}/${stage}`,
         payload,
       );
-
 
       if (response?.status === 201) {
         toast.success(
@@ -862,7 +892,9 @@ export default function App({
                                     color: colors.primary,
                                   }}
                                 >
-                                  {fmt(outlet.fixedRentAmount)}
+                                  {outlet.fixedRentAmount
+                                    ? fmt(outlet.fixedRentAmount)
+                                    : "-"}
                                 </div>
                               </div>
                             )}
@@ -897,7 +929,9 @@ export default function App({
                                     color: colors.primary,
                                   }}
                                 >
-                                  {outlet?.revSharePercent + "%"}
+                                  {outlet?.revSharePercent
+                                    ? outlet?.revSharePercent + "%"
+                                    : "-"}
                                 </div>
                               </div>
                             )}
@@ -929,64 +963,48 @@ export default function App({
                                   color: "#204877",
                                 }}
                               >
-                                {fmt(outlet.sdAmount)}
+                                {outlet.sdAmount ? fmt(outlet.sdAmount) : "-"}
                               </div>
                             </div>
                           </div>
                           <div style={{ display: "flex", gap: 8 }}>
-                            <button
-                              onClick={() => {
-                                setLoiOutlet(outlet);
-                                setLoiPanelOpen(true);
-                              }}
-                              style={{
-                                flex: 1,
-                                padding: "8px",
-                                borderRadius: 10,
-                                border: `1.5px solid ${colors.primary}`,
-                                background: "transparent",
-                                color: colors.primary,
-                                fontSize: 11,
-                                fontWeight: 700,
-                                cursor: "pointer",
-                              }}
-                            >
-                              View LOI
-                            </button>
-                            <button
-                              onClick={() => {
-                                openConfirm(outlet, "Approved");
-                              }}
-                              style={{
-                                flex: 1,
-                                padding: "8px",
-                                borderRadius: 10,
-                                border: "none",
-                                background: colors.secondary,
-                                color: colors.primary,
-                                fontSize: 11,
-                                fontWeight: 700,
-                                cursor: "pointer",
-                              }}
-                            >
-                              Approve
-                            </button>
-                            <button
-                              onClick={() => openConfirm(outlet, "Rejected")}
-                              style={{
-                                flex: 1,
-                                padding: "8px",
-                                borderRadius: 10,
-                                border: "none",
-                                background: "#FDE8EC",
-                                color: "#721426",
-                                fontSize: 11,
-                                fontWeight: 700,
-                                cursor: "pointer",
-                              }}
-                            >
-                              Reject
-                            </button>
+                            {outlet?.loiDocument ? (
+                              <button
+                                onClick={() => {
+                                  setLoiOutlet(outlet);
+                                  setLoiPanelOpen(true);
+                                }}
+                                style={{
+                                  flex: 1,
+                                  padding: "8px",
+                                  borderRadius: 10,
+                                  border: `1.5px solid ${colors.primary}`,
+                                  background: "transparent",
+                                  color: colors.primary,
+                                  fontSize: 11,
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                View LOI
+                              </button>
+                            ) : (
+                              <button
+                                style={{
+                                  flex: 1,
+                                  padding: "8px",
+                                  borderRadius: 10,
+                                  border: `1.5px solid ${colors.primary}`,
+                                  background: "transparent",
+                                  color: colors.primary,
+                                  fontSize: 11,
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Missing LOI
+                              </button>
+                            )}
                           </div>
                         </div>
                       );
@@ -1123,8 +1141,10 @@ export default function App({
                               (e.currentTarget.style.background = "transparent")
                             }
                             onClick={() => {
-                              setLoiOutlet(outlet);
-                              setLoiPanelOpen(true);
+                              if (outlet.loiDocument) {
+                                setLoiOutlet(outlet);
+                                setLoiPanelOpen(true);
+                              }
                             }}
                           >
                             <td style={{ padding: "13px 18px" }}>
@@ -1286,62 +1306,64 @@ export default function App({
                               </span>
                             </td>
                             <td style={{ padding: "13px 18px" }}>
-                              <div style={{ display: "flex", gap: 5 }}>
-                                <button
-                                  style={{
-                                    padding: "5px 10px",
-                                    borderRadius: 7,
-                                    border: `1.5px solid ${colors.primary}`,
-                                    background: "transparent",
-                                    color: colors.primary,
-                                    fontSize: 10,
-                                    fontWeight: 700,
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  LOI
-                                </button>
-                                <button
-                                  onClick={(
-                                    e: React.MouseEvent<HTMLButtonElement>,
-                                  ) => {
-                                    e.stopPropagation();
-                                    openConfirm(outlet, "Approved");
-                                  }}
-                                  style={{
-                                    padding: "5px 10px",
-                                    borderRadius: 7,
-                                    border: "none",
-                                    background: colors.secondary,
-                                    color: colors.primary,
-                                    fontSize: 10,
-                                    fontWeight: 700,
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  ✓
-                                </button>
-                                <button
-                                  onClick={(
-                                    e: React.MouseEvent<HTMLButtonElement>,
-                                  ) => {
-                                    e.stopPropagation();
-                                    openConfirm(outlet, "Rejected");
-                                  }}
-                                  style={{
-                                    padding: "5px 10px",
-                                    borderRadius: 7,
-                                    border: "none",
-                                    background: "#FDE8EC",
-                                    color: "#721426",
-                                    fontSize: 10,
-                                    fontWeight: 700,
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  ✕
-                                </button>
-                              </div>
+                              {outlet?.loiDocument && (
+                                <div style={{ display: "flex", gap: 5 }}>
+                                  <button
+                                    style={{
+                                      padding: "5px 10px",
+                                      borderRadius: 7,
+                                      border: `1.5px solid ${colors.primary}`,
+                                      background: "transparent",
+                                      color: colors.primary,
+                                      fontSize: 10,
+                                      fontWeight: 700,
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    LOI
+                                  </button>
+                                  <button
+                                    onClick={(
+                                      e: React.MouseEvent<HTMLButtonElement>,
+                                    ) => {
+                                      e.stopPropagation();
+                                      openConfirm(outlet, "Approved");
+                                    }}
+                                    style={{
+                                      padding: "5px 10px",
+                                      borderRadius: 7,
+                                      border: "none",
+                                      background: colors.secondary,
+                                      color: colors.primary,
+                                      fontSize: 10,
+                                      fontWeight: 700,
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    ✓
+                                  </button>
+                                  <button
+                                    onClick={(
+                                      e: React.MouseEvent<HTMLButtonElement>,
+                                    ) => {
+                                      e.stopPropagation();
+                                      openConfirm(outlet, "Rejected");
+                                    }}
+                                    style={{
+                                      padding: "5px 10px",
+                                      borderRadius: 7,
+                                      border: "none",
+                                      background: "#FDE8EC",
+                                      color: "#721426",
+                                      fontSize: 10,
+                                      fontWeight: 700,
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              )}
                             </td>
                           </tr>
                         );
@@ -1996,7 +2018,7 @@ export default function App({
         )}
       </div>
 
-      {/* ── LOI PANEL ── */}
+      {/* ── LOI PANEL ── //todo */}
       {loiPanelOpen && loiOutlet && (
         <div style={{ position: "fixed", inset: 0, zIndex: 100 }}>
           <div
@@ -2094,7 +2116,7 @@ export default function App({
                     marginTop: 5,
                   }}
                 >
-                  {loiOutlet.outletName} · {loiOutlet?.outletStatus}
+                  {loiOutlet.outletName}
                 </div>
                 {/* view LOI */}
                 <button
@@ -2138,7 +2160,214 @@ export default function App({
                   </button>
                 </a>
               </div>
+
+              {/* AGREEMENT DETAILS */}
+              <div
+                style={{
+                  marginTop: 20,
+                  background: colors.white,
+                  border: `1px solid ${colors.secondarySurface}`,
+                  borderRadius: 14,
+                  padding: 18,
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 14,
+                    color: colors.primary,
+                    marginBottom: 14,
+                  }}
+                >
+                  Agreement Details
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 12,
+                  }}
+                >
+                  <InfoItem
+                    label="Agreement Tenure"
+                    value={
+                      loiOutlet?.outletAgreement?.agreementTenureMonths
+                        ? `${loiOutlet?.outletAgreement?.agreementTenureMonths} Months`
+                        : "-"
+                    }
+                  />
+
+                  <InfoItem
+                    label="Security Deposit"
+                    value={
+                      loiOutlet?.outletAgreement?.securityDepositMonths
+                        ? `${loiOutlet?.outletAgreement?.securityDepositMonths} Months`
+                        : "-"
+                    }
+                  />
+
+                  <InfoItem
+                    label="Lock-in Period"
+                    value={
+                      loiOutlet?.outletAgreement?.lockInPeriodMonths
+                        ? `${loiOutlet?.outletAgreement?.lockInPeriodMonths} Months`
+                        : "-"
+                    }
+                  />
+
+                  <InfoItem
+                    label="Notice Period"
+                    value={
+                      loiOutlet?.outletAgreement?.noticePeriodMonths
+                        ? `${loiOutlet?.outletAgreement?.noticePeriodMonths} Months`
+                        : "-"
+                    }
+                  />
+
+                  <InfoItem
+                    label="Escalation"
+                    value={
+                      loiOutlet?.outletAgreement?.escalationPercentage
+                        ? `${loiOutlet?.outletAgreement?.escalationPercentage}%`
+                        : "-"
+                    }
+                  />
+
+                  <InfoItem
+                    label="Fit-out Period"
+                    value={
+                      loiOutlet?.outletAgreement?.fitOutPeriodDays
+                        ? `${loiOutlet?.outletAgreement?.fitOutPeriodDays} Days`
+                        : "-"
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* BUSINESS DETAILS */}
+              <div
+                style={{
+                  marginTop: 20,
+                  background: colors.white,
+                  border: `1px solid ${colors.secondarySurface}`,
+                  borderRadius: 14,
+                  padding: 18,
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 14,
+                    color: colors.primary,
+                    marginBottom: 14,
+                  }}
+                >
+                  Potential Business
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 12,
+                  }}
+                >
+                  <InfoItem
+                    label="Expected Footfall"
+                    value={
+                      loiOutlet?.outletPotentialBusiness?.expectedFootfall
+                        ? `${loiOutlet?.outletPotentialBusiness?.expectedFootfall}`
+                        : "-"
+                    }
+                  />
+
+                  <InfoItem
+                    label="Present Brands"
+                    value={
+                      loiOutlet?.outletPotentialBusiness?.presentBrands
+                        ? `${loiOutlet?.outletPotentialBusiness?.presentBrands}`
+                        : "-"
+                    }
+                  />
+
+                  <InfoItem
+                    label="Beverages Brands"
+                    value={
+                      loiOutlet?.outletPotentialBusiness?.beveragesBrands
+                        ? `${loiOutlet?.outletPotentialBusiness?.beveragesBrands}`
+                        : "-"
+                    }
+                  />
+
+                  <InfoItem
+                    label="Healthy Brands"
+                    value={
+                      loiOutlet?.outletPotentialBusiness?.healthyBrands
+                        ? `${loiOutlet?.outletPotentialBusiness?.healthyBrands}`
+                        : "-"
+                    }
+                  />
+
+                  <InfoItem
+                    label="Expected Revenue"
+                    value={
+                      loiOutlet?.outletPotentialBusiness
+                        ?.expectedRevenuePerMonth
+                        ? `₹ ${loiOutlet?.outletPotentialBusiness?.expectedRevenuePerMonth}`
+                        : "-"
+                    }
+                  />
+
+                  <InfoItem
+                    label="Daily Sales Of Other Brands"
+                    value={
+                      loiOutlet?.outletPotentialBusiness
+                        ?.dailySalesOfOtherBrands
+                        ? `₹ ${loiOutlet?.outletPotentialBusiness?.dailySalesOfOtherBrands}`
+                        : "-"
+                    }
+                  />
+
+                  <InfoItem
+                    label="Weekly Off"
+                    value={
+                      loiOutlet?.weeklyOff === "AllDays"
+                        ? "Not Closed"
+                        : loiOutlet?.weeklyOff || "-"
+                    }
+                  />
+                </div>
+
+                <div style={{ marginTop: 16 }}>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: colors.neutralText,
+                      marginBottom: 6,
+                    }}
+                  >
+                    Brand Names
+                  </div>
+
+                  <div
+                    style={{
+                      background: colors.secondarySurface,
+                      padding: 12,
+                      borderRadius: 10,
+                      fontSize: 12,
+                      color: colors.primary,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {loiOutlet?.outletPotentialBusiness?.brandsNames
+                      ? `${loiOutlet?.outletPotentialBusiness?.brandsNames}`
+                      : "-"}
+                  </div>
+                </div>
+              </div>
             </div>
+
             <div
               style={{
                 padding: "20px 26px",

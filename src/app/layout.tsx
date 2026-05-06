@@ -16,14 +16,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "SUPER ADMIN PORTAL",
   description: "Super Admin Portal for Managing Application",
-  manifest: "/manifest.json",
   icons: {
     icon: "/basil.png",
     apple: "/basil.png"
   },
-  themeColor: "#ffffff"
 };
 
+export const viewport = {
+  themeColor: "#ffffff",
+};
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -36,7 +37,10 @@ export default function RootLayout({
       >
                 <Toaster duration={3000} position="top-center"/>
 
-        {children}
+                  {children}
+
+
+        
       </body>
     </html>
   );
