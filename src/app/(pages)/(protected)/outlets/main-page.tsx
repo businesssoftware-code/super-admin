@@ -289,7 +289,6 @@ export default function App({
   const [loiOutlet, setLoiOutlet] = useState<ApiOutlet | null>(null);
   const [confirmModal, setConfirmModal] = useState<ConfirmModal | null>(null);
   const [comment, setComment] = useState<string>("");
-  console.log(onboardedOutlets, "onboardedOutletsonboardedOutlets");
   //outlets
   const [outlets, setOutlets] = useState<ApiOutlet[]>(onboardedOutlets);
 
@@ -311,7 +310,6 @@ export default function App({
         responseOfOultets?.status === 201 &&
         responseOfDashboard?.status === 200
       ) {
-        console.log(responseOfOultets, "responseOfOultetsresponseOfOultets");
         const mappedOutlets = responseOfOultets?.data?.map((el: ApiOutlet) => ({
           outletId: el?.outletId,
           outletName: el?.outletName,
@@ -2199,10 +2197,18 @@ export default function App({
                   />
 
                   <InfoItem
-                    label="Security Deposit"
+                    label="Security Deposit (Month)"
                     value={
                       loiOutlet?.outletAgreement?.securityDepositMonths
                         ? `${loiOutlet?.outletAgreement?.securityDepositMonths} Months`
+                        : "-"
+                    }
+                  />
+                  <InfoItem //todo
+                    label="Security Deposit (₹)"
+                    value={
+                      loiOutlet?.sdAmount
+                        ? `₹ ${loiOutlet?.sdAmount}`
                         : "-"
                     }
                   />
