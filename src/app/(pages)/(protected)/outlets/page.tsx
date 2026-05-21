@@ -13,7 +13,7 @@ import { ApiOutlet } from "@/app/libs/types";
 async function getOnboardedOutlets() {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value ?? "";
-
+  console.log(`${process.env.NEXT_PUBLIC_API_BASE_POINT}/nso/outlets}`, "sdljlfhhf")
 
   const [resOfOutlets, resOfDashboard] = await Promise.all([
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_POINT}/nso/outlets`, {
@@ -69,6 +69,8 @@ function OnboardedOutletsWrapper() {
     sdAmount: el?.sdAmount ?? 0,
     revSharePercent: el?.revSharePercent ?? 0,
     rentModel: el?.rentModel ?? "",
+    camCharges: el?.camCharges ?? 0,
+    revShareOnDeliveryPercent: el?.revShareOnDeliveryPercent ?? 0,
     city: el?.city ?? "",
     status: el?.status ?? "",
     daysPendingForLOIApproval: el?.outletStatus==="draft" ? formatDateDifference(getTodaysDate(), getTodaysDate(el?.createdAt)): 0,
