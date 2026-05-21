@@ -12,6 +12,7 @@ import {
   TypeOfOutletDashboard,
   TypeOfStageIndicators,
 } from "@/app/libs/types";
+import { MapPin } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
 
@@ -330,6 +331,8 @@ export default function App({
           sdAmount: el?.sdAmount ?? 0,
           revSharePercent: el?.revSharePercent ?? 0,
           rentModel: el?.rentModel ?? "",
+          camCharges: el?.camCharges ?? 0,
+          revShareOnDeliveryPercent: el?.revShareOnDeliveryPercent ?? 0,
           city: el?.city ?? "",
           status: el?.status ?? "",
           daysPendingForLOIApproval:
@@ -881,7 +884,7 @@ export default function App({
                                     marginBottom: 2,
                                   }}
                                 >
-                                  Rent/mo
+                                  Rent/month
                                 </div>
                                 <div
                                   style={{
@@ -933,6 +936,73 @@ export default function App({
                                 </div>
                               </div>
                             )}
+                            {/* CAM Charges */}
+                            <div
+                              style={{
+                                flex: 1,
+                                background: "#D5F3FF",
+                                borderRadius: 10,
+                                padding: "7px 12px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: 9,
+                                  color: "#204877",
+                                  fontWeight: 700,
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.4px",
+                                  marginBottom: 2,
+                                }}
+                              >
+                                CAM Charges
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 13,
+                                  fontWeight: 800,
+                                  color: "#204877",
+                                }}
+                              >
+                                {outlet.camCharges
+                                  ? fmt(outlet.camCharges)
+                                  : "-"}
+                              </div>
+                            </div>
+
+                            {/* RevShare on Delivery (percentage) */}
+                            <div
+                              style={{
+                                flex: 1,
+                                background: "#D5F3FF",
+                                borderRadius: 10,
+                                padding: "7px 12px",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: 9,
+                                  color: "#204877",
+                                  fontWeight: 700,
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.4px",
+                                  marginBottom: 2,
+                                }}
+                              >
+                                Rev Share on Delivery (%)
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 13,
+                                  fontWeight: 800,
+                                  color: "#204877",
+                                }}
+                              >
+                                {outlet.revShareOnDeliveryPercent
+                                  ? outlet.revShareOnDeliveryPercent
+                                  : "-"}
+                              </div>
+                            </div>
 
                             <div
                               style={{
@@ -1083,6 +1153,8 @@ export default function App({
                         "Rent / Month",
                         "Revenue Share",
                         "Rent + Revenue Share",
+                        "CAM Charges",
+                        "Rev Share On Delivery (%)",
                         "Security Deposit",
                         "LOI Status",
                         "Days Pending",
@@ -1249,6 +1321,38 @@ export default function App({
                                   " + " +
                                   outlet?.revSharePercent +
                                   "%"}
+                            </td>
+
+                            {/* CAM Charges */}
+                            <td
+                              style={{
+                                padding: "13px 18px",
+                                fontSize: 12,
+                                color: colors.primary,
+                                fontWeight: 700,
+                              }}
+                            >
+                              {outlet?.camCharges
+                                ? fmt(
+                                    isNaN(Number(outlet?.camCharges))
+                                      ? 0
+                                      : Number(outlet?.camCharges),
+                                  )
+                                : ""}
+                            </td>
+
+                            {/* Rev Share on Delivery (%) */}
+                            <td
+                              style={{
+                                padding: "13px 18px",
+                                fontSize: 12,
+                                color: colors.primary,
+                                fontWeight: 700,
+                              }}
+                            >
+                              {outlet?.revShareOnDeliveryPercent
+                                ? outlet?.revShareOnDeliveryPercent
+                                : ""}
                             </td>
 
                             {/* SD amount */}
@@ -1468,6 +1572,10 @@ export default function App({
                         position: "relative",
                         overflow: "hidden",
                       }}
+                      onClick={() => {
+                        setLoiOutlet(outlet);
+                        setLoiPanelOpen(true);
+                      }} //todo
                     >
                       {isLive && (
                         <div
@@ -1527,9 +1635,13 @@ export default function App({
                               fontSize: 12,
                               color: colors.neutralText,
                               marginBottom: 8,
+                              display: "flex",
+                              gap: "0.5rem",
+                              alignItems: "center",
                             }}
                           >
-                            {outlet?.city}
+                            <MapPin size={12} />
+                            {outlet?.address}
                           </div>
                           <div
                             style={{
@@ -1589,6 +1701,27 @@ export default function App({
                                       "%",
                                   color: colors.primary,
                                 },
+
+                                {
+                                  label: "CAM Charges",
+                                  value: outlet?.camCharges
+                                    ? fmt(
+                                        isNaN(Number(outlet?.camCharges))
+                                          ? 0
+                                          : Number(outlet?.camCharges),
+                                      )
+                                    : "",
+                                  color: colors.primary,
+                                },
+
+                                {
+                                  label: "Revenuse Share on Delivery (%)",
+                                  value: outlet?.revShareOnDeliveryPercent
+                                    ? outlet?.revShareOnDeliveryPercent
+                                    : "",
+                                  color: colors.primary,
+                                },
+
                                 {
                                   label: "SECURITY DEPOSIT",
                                   value: fmt(outlet.sdAmount),
@@ -1765,9 +1898,13 @@ export default function App({
                             fontSize: 12,
                             color: colors.neutralText,
                             marginBottom: 12,
+                            display: "flex",
+                            gap: "0.5rem",
+                            alignItems: "center",
                           }}
                         >
-                          {outlet?.city ?? ""}
+                          <MapPin size={12} />
+                          {outlet?.address ?? ""}
                         </div>
                         <div
                           style={{
@@ -1897,6 +2034,58 @@ export default function App({
                                   " + " +
                                   outlet?.revSharePercent +
                                   "%"}
+                            </div>
+                          </div>
+
+                          {/* cam charges */}
+                          <div>
+                            <div
+                              style={{
+                                fontSize: 10,
+                                color: colors.neutralText,
+                                fontWeight: 600,
+                              }}
+                            >
+                              CAM Charges
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 700,
+                                color: colors.primary,
+                              }}
+                            >
+                              {outlet?.camCharges
+                                ? fmt(
+                                    isNaN(Number(outlet?.camCharges))
+                                      ? 0
+                                      : Number(outlet?.camCharges),
+                                  )
+                                : ""}
+                            </div>
+                          </div>
+
+                          {/* rev share on ddelivery (%) */}
+                          <div>
+                            <div
+                              style={{
+                                fontSize: 10,
+                                color: colors.neutralText,
+                                fontWeight: 600,
+                              }}
+                            >
+                              Revenue Share On Delivery (%)
+                            </div>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 700,
+                                color: colors.primary,
+                              }}
+                            >
+                              {outlet?.revShareOnDeliveryPercent
+                                ? outlet?.revShareOnDeliveryPercent
+                                : ""}
                             </div>
                           </div>
 
@@ -2064,7 +2253,19 @@ export default function App({
                   >
                     {loiOutlet?.outletName}
                   </div>
-                  {/* <div style={{ fontSize: 11, color: colors.neutralText, marginTop: 3 }}>Submitted {loiOutlet.submittedDate} by {loiOutlet.submittedBy}</div> */}
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: colors.neutralText,
+                      marginBottom: 8,
+                      display: "flex",
+                      gap: "0.5rem",
+                      alignItems: "center",
+                    }}
+                  >
+                    <MapPin size={12} />
+                    {loiOutlet?.address}
+                  </div>
                 </div>
                 <button
                   onClick={() => setLoiPanelOpen(false)}
@@ -2207,9 +2408,7 @@ export default function App({
                   <InfoItem //todo
                     label="Security Deposit (₹)"
                     value={
-                      loiOutlet?.sdAmount
-                        ? `₹ ${loiOutlet?.sdAmount}`
-                        : "-"
+                      loiOutlet?.sdAmount ? `${fmt(loiOutlet?.sdAmount)}` : "-"
                     }
                   />
 
@@ -2280,7 +2479,7 @@ export default function App({
                   }}
                 >
                   <InfoItem
-                    label="Expected Footfall"
+                    label="Expected Footfall (in numbers)"
                     value={
                       loiOutlet?.outletPotentialBusiness?.expectedFootfall
                         ? `${loiOutlet?.outletPotentialBusiness?.expectedFootfall}`
@@ -2289,7 +2488,7 @@ export default function App({
                   />
 
                   <InfoItem
-                    label="Present Brands"
+                    label="Present Brands (in numbers)"
                     value={
                       loiOutlet?.outletPotentialBusiness?.presentBrands
                         ? `${loiOutlet?.outletPotentialBusiness?.presentBrands}`
@@ -2298,7 +2497,7 @@ export default function App({
                   />
 
                   <InfoItem
-                    label="Beverages Brands"
+                    label="Beverages Brands (in numbers)"
                     value={
                       loiOutlet?.outletPotentialBusiness?.beveragesBrands
                         ? `${loiOutlet?.outletPotentialBusiness?.beveragesBrands}`
@@ -2307,7 +2506,7 @@ export default function App({
                   />
 
                   <InfoItem
-                    label="Healthy Brands"
+                    label="Healthy Brands (in numbers)"
                     value={
                       loiOutlet?.outletPotentialBusiness?.healthyBrands
                         ? `${loiOutlet?.outletPotentialBusiness?.healthyBrands}`
@@ -2320,7 +2519,7 @@ export default function App({
                     value={
                       loiOutlet?.outletPotentialBusiness
                         ?.expectedRevenuePerMonth
-                        ? `₹ ${loiOutlet?.outletPotentialBusiness?.expectedRevenuePerMonth}`
+                        ? `${fmt(loiOutlet?.outletPotentialBusiness?.expectedRevenuePerMonth)}`
                         : "-"
                     }
                   />
@@ -2330,7 +2529,7 @@ export default function App({
                     value={
                       loiOutlet?.outletPotentialBusiness
                         ?.dailySalesOfOtherBrands
-                        ? `₹ ${loiOutlet?.outletPotentialBusiness?.dailySalesOfOtherBrands}`
+                        ? `${fmt(loiOutlet?.outletPotentialBusiness?.dailySalesOfOtherBrands)}`
                         : "-"
                     }
                   />
@@ -2374,47 +2573,49 @@ export default function App({
               </div>
             </div>
 
-            <div
-              style={{
-                padding: "20px 26px",
-                borderTop: `1px solid ${colors.secondarySurface}`,
-              }}
-            >
-              <div style={{ display: "flex", gap: 10 }}>
-                <button
-                  onClick={() => openConfirm(loiOutlet, "Approved")}
-                  style={{
-                    flex: 1,
-                    padding: "13px",
-                    borderRadius: 14,
-                    border: "none",
-                    background: colors.secondary,
-                    color: colors.primary,
-                    fontWeight: 800,
-                    fontSize: 13,
-                    cursor: "pointer",
-                  }}
-                >
-                  ✓ Approve Outlet
-                </button>
-                <button
-                  onClick={() => openConfirm(loiOutlet, "Rejected")}
-                  style={{
-                    flex: 1,
-                    padding: "13px",
-                    borderRadius: 14,
-                    border: "none",
-                    background: "#FDE8EC",
-                    color: "#721426",
-                    fontWeight: 800,
-                    fontSize: 13,
-                    cursor: "pointer",
-                  }}
-                >
-                  ✕ Reject
-                </button>
+            {activeTab === "pending" && (
+              <div
+                style={{
+                  padding: "20px 26px",
+                  borderTop: `1px solid ${colors.secondarySurface}`,
+                }}
+              >
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button
+                    onClick={() => openConfirm(loiOutlet, "Approved")}
+                    style={{
+                      flex: 1,
+                      padding: "13px",
+                      borderRadius: 14,
+                      border: "none",
+                      background: colors.secondary,
+                      color: colors.primary,
+                      fontWeight: 800,
+                      fontSize: 13,
+                      cursor: "pointer",
+                    }}
+                  >
+                    ✓ Approve Outlet
+                  </button>
+                  <button
+                    onClick={() => openConfirm(loiOutlet, "Rejected")}
+                    style={{
+                      flex: 1,
+                      padding: "13px",
+                      borderRadius: 14,
+                      border: "none",
+                      background: "#FDE8EC",
+                      color: "#721426",
+                      fontWeight: 800,
+                      fontSize: 13,
+                      cursor: "pointer",
+                    }}
+                  >
+                    ✕ Reject
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
