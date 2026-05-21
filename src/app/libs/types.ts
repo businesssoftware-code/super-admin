@@ -89,6 +89,8 @@ loiDocument: string;
   createdAt: string;
   areaManager: string;
   revSharePercent: number;
+  camCharges: number;
+  revShareOnDeliveryPercent: number;
   rentModel: string;
   outletPotentialBusiness: TypeOfOutletPotentialBusiness | null;
   outletAgreement: TypeOfOutletAgreement | null;
