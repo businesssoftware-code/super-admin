@@ -12,6 +12,7 @@ import {
   TypeOfOutletDashboard,
   TypeOfStageIndicators,
 } from "@/app/libs/types";
+import { MapPin } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
 
@@ -1634,9 +1635,13 @@ export default function App({
                               fontSize: 12,
                               color: colors.neutralText,
                               marginBottom: 8,
+                              display: "flex",
+                              gap: "0.5rem",
+                              alignItems: "center",
                             }}
                           >
-                            {outlet?.city}
+                            <MapPin size={12} />
+                            {outlet?.address}
                           </div>
                           <div
                             style={{
@@ -1893,9 +1898,13 @@ export default function App({
                             fontSize: 12,
                             color: colors.neutralText,
                             marginBottom: 12,
+                            display: "flex",
+                            gap: "0.5rem",
+                            alignItems: "center",
                           }}
                         >
-                          {outlet?.city ?? ""}
+                          <MapPin size={12} />
+                          {outlet?.address ?? ""}
                         </div>
                         <div
                           style={{
@@ -2244,7 +2253,19 @@ export default function App({
                   >
                     {loiOutlet?.outletName}
                   </div>
-                  {/* <div style={{ fontSize: 11, color: colors.neutralText, marginTop: 3 }}>Submitted {loiOutlet.submittedDate} by {loiOutlet.submittedBy}</div> */}
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: colors.neutralText,
+                      marginBottom: 8,
+                      display: "flex",
+                      gap: "0.5rem",
+                      alignItems: "center",
+                    }}
+                  >
+                    <MapPin size={12} />
+                    {loiOutlet?.address}
+                  </div>
                 </div>
                 <button
                   onClick={() => setLoiPanelOpen(false)}
