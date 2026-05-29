@@ -13,7 +13,7 @@ import { ApiOutlet } from "@/app/libs/types";
 async function getOnboardedOutlets() {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value ?? "";
-  console.log(`${process.env.NEXT_PUBLIC_API_BASE_POINT}/nso/outlets}`, "sdljlfhhf")
+
 
   const [resOfOutlets, resOfDashboard] = await Promise.all([
     fetch(`${process.env.NEXT_PUBLIC_API_BASE_POINT}/nso/outlets`, {
@@ -53,9 +53,8 @@ function OnboardedOutletsWrapper() {
 
   if (!responseOnboardedOutlets || !responseOfDashboard) notFound();
 
-  console.log(responseOnboardedOutlets, "responseOnboardedOutletsresponseOnboardedOutlets123");
 
-  const mappedOutlets = responseOnboardedOutlets?.map((el: ApiOutlet) => ({
+  const mappedOutlets = responseOnboardedOutlets?.data?.map((el: ApiOutlet) => ({
    
     outletId: el?.outletId,
     outletName: el?.outletName,
