@@ -311,7 +311,7 @@ export default function App({
         responseOfOultets?.status === 201 &&
         responseOfDashboard?.status === 200
       ) {
-        const mappedOutlets = responseOfOultets?.data?.map((el: ApiOutlet) => ({
+        const mappedOutlets = responseOfOultets?.data?.data?.map((el: ApiOutlet) => ({
           outletId: el?.outletId,
           outletName: el?.outletName,
           outletStatus:
