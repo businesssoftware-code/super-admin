@@ -16,7 +16,7 @@ async function getOnboardedOutlets() {
 
 
   const [resOfOutlets, resOfDashboard] = await Promise.all([
-    fetch(`${process.env.NEXT_PUBLIC_API_BASE_POINT}/nso/outlets`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_BASE_POINT}/nso/outlets?page=1&pageSize=5`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -53,6 +53,7 @@ function OnboardedOutletsWrapper() {
 
   if (!responseOnboardedOutlets || !responseOfDashboard) notFound();
 
+  console.log(responseOnboardedOutlets, "skhkfhhkfhfkkhfkhfh");
 
   const mappedOutlets = responseOnboardedOutlets?.data?.map((el: ApiOutlet) => ({
    
@@ -88,7 +89,7 @@ function OnboardedOutletsWrapper() {
 
   
 
-  return <MainPage onboardedOutlets={mappedOutlets} dashboardData={responseOfDashboard} />;
+  return <MainPage onboardedOutlets={mappedOutlets} dashboardData={responseOfDashboard}  totalPage={responseOnboardedOutlets?.pagination?.totalPages}/>;
 }
 
 // ----------------------
