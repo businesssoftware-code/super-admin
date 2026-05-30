@@ -12,7 +12,7 @@ import {
   TypeOfOutletDashboard,
   TypeOfStageIndicators,
 } from "@/app/libs/types";
-import { MapPin } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
 
@@ -277,12 +277,14 @@ const PhaseStepper: React.FC<TypePhaseStepperProps> = ({ stageIndicators }) => (
 type TypeOfPageProps = {
   onboardedOutlets: ApiOutlet[];
   dashboardData: TypeOfOutletDashboard;
+  totalPage: number;
 };
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 export default function App({
   onboardedOutlets,
   dashboardData,
+  totalPage,
 }: TypeOfPageProps) {
   const [activeTab, setActiveTab] = useState<TabId>("pending");
   const [activeFilter, setActiveFilter] = useState<FilterType>("All");
@@ -297,13 +299,16 @@ export default function App({
   const [dashboard, setDashboard] = useState<TypeOfOutletDashboard | null>(
     dashboardData,
   );
+  //pagination
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(totalPage);
 
   const handleFetch = async () => {
     const toastId = toast.loading("Fetching the outlets data...");
 
     try {
       const [responseOfOultets, responseOfDashboard] = await Promise.all([
-        privateApi.get("/nso/outlets"),
+        privateApi.get("/nso/outlets?page=1&pageSize=5"),
         privateApi.get("/outlets/nso/dashboard"),
       ]);
 
@@ -311,49 +316,52 @@ export default function App({
         responseOfOultets?.status === 201 &&
         responseOfDashboard?.status === 200
       ) {
-        const mappedOutlets = responseOfOultets?.data?.data?.map((el: ApiOutlet) => ({
-          outletId: el?.outletId,
-          outletName: el?.outletName,
-          outletStatus:
-            el?.outletStatus === "draft"
-              ? "Pending"
-              : el?.outletStatus === "approved"
-                ? "Approved"
-                : "Rejected",
-          expectedDate: el?.expectedDate
-            ? formatDateWithOrdinal(el.expectedDate)
-            : "",
-          actualDate: el?.actualDate
-            ? formatDateWithOrdinal(el.actualDate)
-            : "",
-          address: el?.address ?? "",
-          fixedRentAmount: el?.fixedRentAmount ?? 0,
-          sdAmount: el?.sdAmount ?? 0,
-          revSharePercent: el?.revSharePercent ?? 0,
-          rentModel: el?.rentModel ?? "",
-          camCharges: el?.camCharges ?? 0,
-          revShareOnDeliveryPercent: el?.revShareOnDeliveryPercent ?? 0,
-          city: el?.city ?? "",
-          status: el?.status ?? "",
-          daysPendingForLOIApproval:
-            el?.outletStatus === "draft"
-              ? formatDateDifference(
-                  getTodaysDate(),
-                  getTodaysDate(el?.createdAt),
-                )
-              : 0,
-          stageIndicators: el?.stageIndicators ?? [],
-          overallProgress: el?.overallProgress ?? 0,
-          approvedDate: formatDateWithOrdinal(el?.approvedDate ?? "") ?? "",
-          loiDocument: el?.loiDocument ?? "",
-          rejectionReason: el?.rejectionReason ?? "",
-          createdAt: formatDateWithShort(el?.createdAt ?? "") ?? "",
-          areaManager: el?.areaManager ?? "",
-          weeklyOff: el?.weeklyOff ?? "",
-          outletAgreement: el?.outletAgreement,
-          outletPotentialBusiness: el?.outletPotentialBusiness,
-        }));
-
+        const mappedOutlets = responseOfOultets?.data?.data?.map(
+          (el: ApiOutlet) => ({
+            outletId: el?.outletId,
+            outletName: el?.outletName,
+            outletStatus:
+              el?.outletStatus === "draft"
+                ? "Pending"
+                : el?.outletStatus === "approved"
+                  ? "Approved"
+                  : "Rejected",
+            expectedDate: el?.expectedDate
+              ? formatDateWithOrdinal(el.expectedDate)
+              : "",
+            actualDate: el?.actualDate
+              ? formatDateWithOrdinal(el.actualDate)
+              : "",
+            address: el?.address ?? "",
+            fixedRentAmount: el?.fixedRentAmount ?? 0,
+            sdAmount: el?.sdAmount ?? 0,
+            revSharePercent: el?.revSharePercent ?? 0,
+            rentModel: el?.rentModel ?? "",
+            camCharges: el?.camCharges ?? 0,
+            revShareOnDeliveryPercent: el?.revShareOnDeliveryPercent ?? 0,
+            city: el?.city ?? "",
+            status: el?.status ?? "",
+            daysPendingForLOIApproval:
+              el?.outletStatus === "draft"
+                ? formatDateDifference(
+                    getTodaysDate(),
+                    getTodaysDate(el?.createdAt),
+                  )
+                : 0,
+            stageIndicators: el?.stageIndicators ?? [],
+            overallProgress: el?.overallProgress ?? 0,
+            approvedDate: formatDateWithOrdinal(el?.approvedDate ?? "") ?? "",
+            loiDocument: el?.loiDocument ?? "",
+            rejectionReason: el?.rejectionReason ?? "",
+            createdAt: formatDateWithShort(el?.createdAt ?? "") ?? "",
+            areaManager: el?.areaManager ?? "",
+            weeklyOff: el?.weeklyOff ?? "",
+            outletAgreement: el?.outletAgreement,
+            outletPotentialBusiness: el?.outletPotentialBusiness,
+          }),
+        );
+        setPage(1);
+        setTotalPages(responseOfOultets?.data?.pagination?.totalPages);
         setOutlets(mappedOutlets);
         setDashboard(responseOfDashboard.data);
 
@@ -365,6 +373,74 @@ export default function App({
       toast.error(getErrorMessage(err) || "An error occurred.", {
         id: toastId,
         duration: 3000,
+      });
+    }
+  };
+
+  const handlePaginationReFetch = async (pageNumber = page) => {
+    const toastId = toast.loading("Fetching outlets...");
+
+    try {
+      const responseOfOultets = await privateApi.get(
+        `/nso/outlets?page=${pageNumber}&pageSize=5`,
+      );
+
+      if (responseOfOultets?.status === 201) {
+        const mappedOutlets = responseOfOultets?.data?.data?.map(
+          (el: ApiOutlet) => ({
+            outletId: el?.outletId,
+            outletName: el?.outletName,
+            outletStatus:
+              el?.outletStatus === "draft"
+                ? "Pending"
+                : el?.outletStatus === "approved"
+                  ? "Approved"
+                  : "Rejected",
+            expectedDate: el?.expectedDate
+              ? formatDateWithOrdinal(el.expectedDate)
+              : "",
+            actualDate: el?.actualDate
+              ? formatDateWithOrdinal(el.actualDate)
+              : "",
+            address: el?.address ?? "",
+            fixedRentAmount: el?.fixedRentAmount ?? 0,
+            sdAmount: el?.sdAmount ?? 0,
+            revSharePercent: el?.revSharePercent ?? 0,
+            rentModel: el?.rentModel ?? "",
+            camCharges: el?.camCharges ?? 0,
+            revShareOnDeliveryPercent: el?.revShareOnDeliveryPercent ?? 0,
+            city: el?.city ?? "",
+            status: el?.status ?? "",
+            daysPendingForLOIApproval:
+              el?.outletStatus === "draft"
+                ? formatDateDifference(
+                    getTodaysDate(),
+                    getTodaysDate(el?.createdAt),
+                  )
+                : 0,
+            stageIndicators: el?.stageIndicators ?? [],
+            overallProgress: el?.overallProgress ?? 0,
+            approvedDate: formatDateWithOrdinal(el?.approvedDate ?? "") ?? "",
+            loiDocument: el?.loiDocument ?? "",
+            rejectionReason: el?.rejectionReason ?? "",
+            createdAt: formatDateWithShort(el?.createdAt ?? "") ?? "",
+            areaManager: el?.areaManager ?? "",
+            weeklyOff: el?.weeklyOff ?? "",
+            outletAgreement: el?.outletAgreement,
+            outletPotentialBusiness: el?.outletPotentialBusiness,
+          }),
+        );
+
+        setOutlets(mappedOutlets);
+        setPage(responseOfOultets?.data?.pagination?.page);
+        // depends on your API response structure
+        setTotalPages(responseOfOultets?.data?.pagination?.totalPages);
+
+        toast.dismiss(toastId);
+      }
+    } catch (err) {
+      toast.error(getErrorMessage(err), {
+        id: toastId,
       });
     }
   };
@@ -560,68 +636,6 @@ export default function App({
           >
             {dashboard?.stats?.pendingApprovals ?? 0} Pending
           </div>
-          {/* <div style={{ position: "relative" }}>
-            <button onClick={() => setNotifOpen(o => !o)}
-              style={{ width: 40, height: 40, borderRadius: "50%", background: notifOpen ? colors.secondary : "rgba(255,255,255,0.1)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", position: "relative" }}>
-              <BellIcon size={18} color={notifOpen ? colors.primary : "white"} />
-              {unreadCount > 0 && <div style={{ position: "absolute", top: 5, right: 5, width: 17, height: 17, background: "#721426", borderRadius: "50%", border: "2px solid " + colors.primary, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "white" }}>{unreadCount > 9 ? "9+" : unreadCount}</div>}
-            </button>
-            {notifOpen && (
-              <>
-                <div onClick={() => setNotifOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 98 }} />
-                <div style={{ position: "absolute", top: "calc(100% + 12px)", right: 0, width: 390, background: colors.white, borderRadius: 20, boxShadow: "0 20px 70px rgba(6,51,18,0.18)", border: `1px solid ${colors.secondarySurface}`, overflow: "hidden", zIndex: 99 }}>
-                  <div style={{ padding: "18px 20px 14px", borderBottom: `1px solid ${colors.secondarySurface}` }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontWeight: 800, fontSize: 15, color: colors.primary }}>Notifications</span>
-                        {unreadCount > 0 && <span style={{ background: "#721426", color: "white", borderRadius: 20, padding: "2px 9px", fontSize: 11, fontWeight: 700 }}>{unreadCount} new</span>}
-                      </div>
-                      <div style={{ display: "flex", gap: 4 }}>
-                        {unreadCount > 0 && <button onClick={markAllRead} style={{ fontSize: 11, color: colors.info, fontWeight: 700, background: colors.accent, border: "none", cursor: "pointer", padding: "5px 10px", borderRadius: 8 }}>Mark all read</button>}
-                        <button onClick={() => setNotifications([])} style={{ fontSize: 11, color: colors.neutralText, fontWeight: 600, background: colors.secondarySurface, border: "none", cursor: "pointer", padding: "5px 10px", borderRadius: 8 }}>Clear</button>
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      {(["All", "Unread", "Urgent"] as FilterType[]).map(f => (
-                        <button key={f} onClick={() => setNotifFilter(f)} style={{ padding: "5px 14px", borderRadius: 20, border: "none", background: notifFilter === f ? colors.primary : colors.secondarySurface, color: notifFilter === f ? colors.secondary : colors.neutralText, fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
-                          {f}{f === "Unread" && unreadCount > 0 ? ` (${unreadCount})` : ""}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div style={{ maxHeight: 360, overflowY: "auto" }}>
-                    {filteredNotifs.length === 0 ? (
-                      <div style={{ padding: "40px 20px", textAlign: "center", color: colors.neutralText }}>
-                        <div style={{ fontSize: 32, marginBottom: 8 }}>🔔</div>
-                        <div style={{ fontWeight: 700, fontSize: 13, color: colors.primary }}>All caught up!</div>
-                      </div>
-                    ) : filteredNotifs.map((n: Notification) => {
-                      const ns = notifTypeStyle(n.type);
-                      return (
-                        <div key={n.id} onClick={() => markRead(n.id)}
-                          style={{ padding: "13px 20px 13px 26px", borderBottom: `1px solid ${colors.secondarySurface}`, display: "flex", gap: 12, cursor: "pointer", background: n.read ? "transparent" : "#F5FFF0", position: "relative" }}
-                          onMouseEnter={e => (e.currentTarget.style.background = "#F2F5F0")}
-                          onMouseLeave={e => (e.currentTarget.style.background = n.read ? "transparent" : "#F5FFF0")}>
-                          {!n.read && <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: ns.dot, borderRadius: "0 4px 4px 0" }} />}
-                          <div style={{ width: 38, height: 38, borderRadius: 12, background: ns.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>{n.icon}</div>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontWeight: n.read ? 600 : 800, fontSize: 13, color: colors.primary, marginBottom: 2 }}>{n.title}</div>
-                            <div style={{ fontSize: 12, color: colors.neutralText, marginBottom: 3 }}>{n.body}</div>
-                            <div style={{ fontSize: 11, color: colors.neutralBg }}>{n.time}</div>
-                          </div>
-                          {!n.read && <button onClick={e => { e.stopPropagation(); markRead(n.id); }} style={{ width: 26, height: 26, borderRadius: 7, border: `1.5px solid ${colors.secondarySurface}`, background: "white", cursor: "pointer", flexShrink: 0, fontSize: 13 }}>✓</button>}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div style={{ padding: "10px 20px", background: colors.secondarySurface }}>
-                    <div style={{ fontSize: 11, color: colors.neutralText, textAlign: "center" }}>Auto-generated from outlet activity & urgency thresholds</div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div> */}
-          {/* <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "white", fontSize: 16 }}>👤</div> */}
         </div>
       </div>
 
@@ -2755,6 +2769,71 @@ export default function App({
           </div>
         </div>
       )}
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "12px",
+          padding: "20px",
+        }}
+      >
+        <button
+          disabled={page === 1}
+          onClick={() => {
+            setPage((prev) => prev - 1);
+            handlePaginationReFetch(page - 1);
+          }}
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            border: "1px solid #e5e7eb",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: page === 1 ? "not-allowed" : "pointer",
+            opacity: page === 1 ? 0.5 : 1,
+            background: "#fff",
+          }}
+        >
+          <ChevronLeft size={18} />
+        </button>
+
+        <span
+          style={{
+            fontSize: 14,
+            fontWeight: 600,
+            minWidth: 100,
+            textAlign: "center",
+          }}
+        >
+          {page} / {totalPages}
+        </span>
+
+        <button
+          disabled={page === totalPages}
+          onClick={() => {
+            setPage((prev) => prev + 1);
+            handlePaginationReFetch(page + 1);
+          }}
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            border: "1px solid #e5e7eb",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: page === totalPages ? "not-allowed" : "pointer",
+            opacity: page === totalPages ? 0.5 : 1,
+            background: "#fff",
+          }}
+        >
+          <ChevronRight size={18} />
+        </button>
+      </div>
     </div>
   );
 }
