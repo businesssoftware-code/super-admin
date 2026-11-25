@@ -3,6 +3,7 @@ import { House, LogOut, User } from "lucide-react";
 export const menuItems = [
     { label: "My Profile", icon: User, link: "/home" },
     { label: "Outlets", icon:House , link: "/outlets" },
+    { label: "Trainee Evaluations", icon:User , link: "/trainee-evaluation" },
     { label: "Logout", icon:LogOut },
     // {
     //   label: "Check Employee's Profile",
